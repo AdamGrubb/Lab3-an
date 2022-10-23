@@ -1,0 +1,7 @@
+TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.Booking=Sara,4,12-25-1986 10:35Booking=Adan,4,12-25-1988 10:40Booking=Hanna,4,12-25-2045 10:40Booking=My,4,12-25-2026 10:40.
+TableNumber=7.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.
+TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.
+TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.
+TableNumber=2.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.Booking=Adan,4,12-25-1988 10:40.
+TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.
+TableNumber=9.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=True.
