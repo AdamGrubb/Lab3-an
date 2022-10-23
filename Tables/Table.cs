@@ -1,4 +1,5 @@
-﻿using Lab3.Guests;
+﻿using Lab3.BookingSystem;
+using Lab3.Guests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,29 +8,29 @@ using System.Threading.Tasks;
 
 namespace Lab3.Tables
 {
-    public class Table : ITable
+    public class Table : IBookingObject
     {
-        public int TableNumber { get; set; }
-        public int NumberOfSeats { get; set; }
+        public string NameID { get; set; }
+        public int MaxNumberOfGuests { get; set; }
         public bool WheelChairAccessable { get; set; }
-        public bool LocatedOutside { get; set; }
+        public bool LocatedOutside { get; set; } //Här har vi ju ett nytt fält. Ska det vara kvar??
         public List<DateTimeAndGuestStruct> Booking { get; set; }
 
 
-        public Table(int tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside, List<DateTimeAndGuestStruct> booking)
+        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside, List<DateTimeAndGuestStruct> booking)
         {
-            TableNumber = tableNumber;
-            NumberOfSeats = numberOfSeats;
+            NameID = tableNumber;
+            MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
-            LocatedOutside = locatedOutside;
+            LocatedOutside = locatedOutside;//Här har vi ju ett nytt fält. Ska det vara kvar??
             Booking = booking;
         }
-        public Table(int tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside)
+        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside)
         {
-            TableNumber = tableNumber;
-            NumberOfSeats = numberOfSeats;
+            NameID = tableNumber;
+            MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
-            LocatedOutside = locatedOutside;
+            LocatedOutside = locatedOutside;//Här har vi ju ett nytt fält. Ska det vara kvar??
         }
         public void BookATime(Guest BookingGuest, DateTime BookedTime)
         {

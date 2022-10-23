@@ -12,8 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Lab3.BookingSystem;
 using Lab3.Restaurant;
-using Lab3.Tables;
 
 namespace Lab3
 {
@@ -27,15 +27,15 @@ namespace Lab3
         {
             InitializeComponent();
             Restaurants Azteka = new Restaurants();
-            foreach (ITable table in Azteka.Tables)
+            foreach (IBookingObject table in Azteka.BookableObjects)
             {
-                Testar.Text += table.TableNumber + "\n";
+                Testar.Text += table.NameID + "\n";
             }
         }
 
         private void TestKnapp_Click(object sender, RoutedEventArgs e)
         {
-            Azteka.WriteTableFile(Azteka.Tables);
+            Azteka.WriteBookingObjectFile(Azteka.BookableObjects);
         }
     }
 }

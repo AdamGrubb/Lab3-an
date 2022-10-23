@@ -1,4 +1,5 @@
-﻿using Lab3.Guests;
+﻿using Lab3.BookingSystem;
+using Lab3.Guests;
 using Lab3.Tables;
 using System;
 using System.Collections.Generic;
@@ -13,16 +14,17 @@ using System.Threading.Tasks;
 
 namespace Lab3.Restaurant
 {
-    internal class Restaurants : IRestaurants
+    internal class Restaurants : IBookingSystem
     {
-        public List<ITable> Tables { get; set; }
-
-
+        public List<IBookingObject> BookableObjects { get; set; }
+       public string[] LoadedFileText { get; set; }
         public Restaurants ()
         {
-            LoadTables();
+            LoadedFileText=LoadBookingObjectFile();
+            BookableObjects= ExtractBookingObjectFields(LoadedFileText);
+
         }
-        private void LoadTables() //Lägg på ett async här och en delay på 4000 för att testa async funktionen.
+        public string[] LoadBookingObjectFile() //Hur ska jag lösa det här? En varning kan ploppa upp att det inte existerar några bord, ge möjlighet att skapa? Antagligen inte.
         {
             string[] loadTextFromFile;
 
@@ -31,44 +33,32 @@ namespace Lab3.Restaurant
             FileInfo fi = new FileInfo(filepath);
             if (fi.Exists)
             {
-                loadTextFromFile = File.ReadAllLines(filepath).ToArray();
-                this.Tables = ReadTableFile(loadTextFromFile);
+                return loadTextFromFile = File.ReadAllLines(filepath).ToArray();
             }
+            return null;
         }
-        public string writeOutTable() //Fixa den här metoden, den skriver inte ut något vettigt alls.
+    
+    public List<IBookingObject> ExtractBookingObjectFields(string[] fileText) //Här har du ett eventuellt fel om det inte blir nån matchning. Gör en If Match>0 {} sen foreachen, annars return null.
         {
-            string tempString = "d";
-            //    var bookedTables = Tables.Where(table => table.Booking.Count < 0);
-            //  foreach (ITable table in bookedTables)
-            //    {
-            //        t
-            //        tempString+=$"Det finns en bokning den: {table.Booking}"
-            //    }
-            return tempString;
-    }
-    private List<ITable> ReadTableFile(string[] fileText)
-        {
-            List<ITable> tables = new List<ITable>();
+            List<IBookingObject> tables = new List<IBookingObject>();
             Regex tableInfo = new Regex(@"TableNumber=(\d+)\.NumberOfSeats=(\d+)\.WheelChairAccessable=(True|False)\.LocatedOutside=(True|False)\.");
             Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
 
             foreach (string Line in fileText)
             {
-                List<DateTimeAndGuestStruct> Bookings = importBookings(Line);
-                int tableNumber;
+                List<DateTimeAndGuestStruct> Bookings = ImportBookings(Line);
+                string tableNumber = tableInfo.Match(Line).Groups[1].Value;
                 int numberOfSeats;
                 bool wheelChairAccessable;
-                bool locatedOutside;
-                bool ifWorks= Int32.TryParse(tableInfo.Match(Line).Groups[1].Value, out tableNumber);
-                if (ifWorks == false) continue;
-                ifWorks = Int32.TryParse(tableInfo.Match(Line).Groups[2].Value, out numberOfSeats);
+                bool locatedOutside; //Här har vi ju ett nytt fält. Ska det vara kvar??
+                bool ifWorks = Int32.TryParse(tableInfo.Match(Line).Groups[2].Value, out numberOfSeats);
                 if (ifWorks == false) continue;
                 ifWorks = Boolean.TryParse(tableInfo.Match(Line).Groups[3].Value, out wheelChairAccessable);
                 if (ifWorks == false) continue;
                 ifWorks = Boolean.TryParse(tableInfo.Match(Line).Groups[4].Value, out locatedOutside);
                 if (ifWorks == false) continue;
 
-                if (Bookings.Count < 1) tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, locatedOutside));
+                if (Bookings.Count < 1) tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, locatedOutside)); //Här har vi ju ett nytt fält. Ska det vara kvar??
                 else tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, locatedOutside, Bookings));
             }
             return tables;
@@ -76,20 +66,20 @@ namespace Lab3.Restaurant
 
         }
        
-        public async void WriteTableFile(List<ITable> fileText) //Gör asynk här också så att det kan ladda från en plats istället.
+        public void WriteBookingObjectFile(List<IBookingObject> BookableObjects) //Gör asynk här också så att det kan ladda från en plats istället.
         {
             string filepath = "Tables.txt";
             List<string> SaveToFile = new List<string>();
-            foreach (ITable table in fileText)
+            foreach (IBookingObject table in BookableObjects)
             {
                 if (table.Booking ==null)
                 {
-                    SaveToFile.Add($"TableNumber={table.TableNumber}.NumberOfSeats={table.NumberOfSeats}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.LocatedOutside}.");
+                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.MaxNumberOfGuests}.");
                 }
                 else
                 {
-                    string bookings = ConvertBookingToString(table);
-                    SaveToFile.Add($"TableNumber={table.TableNumber}.NumberOfSeats={table.NumberOfSeats}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.LocatedOutside}.{bookings}.");
+                    string bookings = table.Booking.Aggregate("", (current, s) => current + ($"Booking={s.BookingGuest.Name},{s.BookingGuest.NumberOfGuests},{s.BookedTime.ToString("MM/dd/yyyy h:mm")}."));
+                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.MaxNumberOfGuests}.{bookings}");
                 }
                     
                 
@@ -97,16 +87,7 @@ namespace Lab3.Restaurant
             File.WriteAllLines(filepath, SaveToFile); 
 
         }
-        private string ConvertBookingToString(ITable table)
-        {
-            string Bookings = "";
-            foreach (DateTimeAndGuestStruct booking in table.Booking)
-            {
-               Bookings +=$"Booking={booking.BookingGuest.Name},{booking.BookingGuest.NumberOfGuests},{booking.BookedTime.ToString("MM/dd/yyyy h:mm")}";
-            }
-            return Bookings;
-        }
-        private List<DateTimeAndGuestStruct> importBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
+        private List<DateTimeAndGuestStruct> ImportBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
         {
             Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
 
