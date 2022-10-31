@@ -1,7 +1,7 @@
-TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.Booking=Sara,4,12-25-1986 10:35.Booking=Adan,4,12-25-1988 10:40.Booking=Hanna,4,12-25-2045 10:40.Booking=My,4,12-25-2026 10:40.
-TableNumber=7.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.
-TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.
-TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.
-TableNumber=2.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.Booking=Adam,4,12-25-1988 10:40.
-TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.
-TableNumber=9.NumberOfSeats=6.WheelChairAccessable=False.LocatedOutside=6.
+TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.Booking=Sara,4,12-25-1986 10:35.Booking=Adan,4,12-25-1988 10:40.Booking=Hanna,4,12-25-2045 10:40.Booking=My,4,12-25-2026 10:40.Booking=Adam,4,10-25-2022 5:00.
+TableNumber=7.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
+TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
+TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
+TableNumber=2.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
+TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
+TableNumber=9.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.

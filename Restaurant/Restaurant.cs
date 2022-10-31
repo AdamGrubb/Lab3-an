@@ -17,32 +17,39 @@ namespace Lab3.Restaurant
     internal class Restaurants : IBookingSystem
     {
         public List<IBookingObject> BookableObjects { get; set; }
-       public string[] LoadedFileText { get; set; }
-        public Restaurants ()
+        public string[] LoadedFileText { get; set; }
+        public Restaurants()
         {
-            LoadedFileText=LoadBookingObjectFile();
-            BookableObjects= ExtractBookingObjectFields(LoadedFileText);
+            LoadedFileText = LoadBookingObjectFile();
+            //if (!LoadedFileText == null); //Vad händer då? Skapa en felruta i programmet som säger att det inte kunde laddas. 
+            BookableObjects = ExtractBookingObjectFields(LoadedFileText);
 
         }
-        public string[] LoadBookingObjectFile() //Hur ska jag lösa det här? En varning kan ploppa upp att det inte existerar några bord, ge möjlighet att skapa? Antagligen inte.
+        public string[] LoadBookingObjectFile() //Hur ska jag lösa det här? En varning kan ploppa upp att det inte existerar några bord, ge möjlighet att skapa? Antagligen inte. En try-catch här.
         {
             string[] loadTextFromFile;
 
-            string filepath= "Tables.txt";
+            string filepath = "Tables.txt";
             //await Task.Delay(4000);
             FileInfo fi = new FileInfo(filepath);
             if (fi.Exists)
             {
                 return loadTextFromFile = File.ReadAllLines(filepath).ToArray();
             }
-            return null;
+            else
+            {
+                fi.Create();
+                return null;
+            }
+                
+                
         }
-    
-    public List<IBookingObject> ExtractBookingObjectFields(string[] fileText) //Här har du ett eventuellt fel om det inte blir nån matchning. Gör en If Match>0 {} sen foreachen, annars return null.
+
+        public List<IBookingObject> ExtractBookingObjectFields(string[] fileText) //Här har du ett eventuellt fel om det inte blir nån matchning. Gör en If Match>0 {} sen foreachen, annars return null.
         {
             List<IBookingObject> tables = new List<IBookingObject>();
-            Regex tableInfo = new Regex(@"TableNumber=(\d+)\.NumberOfSeats=(\d+)\.WheelChairAccessable=(True|False)\.LocatedOutside=(True|False)\.");
-            Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
+            Regex tableInfo = new Regex(@"TableNumber=(\d+)\.NumberOfSeats=(\d+)\.WheelChairAccessable=(True|False)\.");
+            Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2})."); //Återanvända den här??
 
             foreach (string Line in fileText)
             {
@@ -55,36 +62,12 @@ namespace Lab3.Restaurant
                 if (ifWorks == false) continue;
                 ifWorks = Boolean.TryParse(tableInfo.Match(Line).Groups[3].Value, out wheelChairAccessable);
                 if (ifWorks == false) continue;
-                ifWorks = Boolean.TryParse(tableInfo.Match(Line).Groups[4].Value, out locatedOutside);
-                if (ifWorks == false) continue;
 
-                if (Bookings.Count < 1) tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, locatedOutside)); //Här har vi ju ett nytt fält. Ska det vara kvar??
-                else tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, locatedOutside, Bookings));
+                if (Bookings.Count < 1) tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable)); //Här har vi ju ett nytt fält. Ska det vara kvar??
+                else tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, Bookings));
             }
             return tables;
 
-
-        }
-       
-        public void WriteBookingObjectFile(List<IBookingObject> BookableObjects) //Gör asynk här också så att det kan ladda från en plats istället.
-        {
-            string filepath = "Tables.txt";
-            List<string> SaveToFile = new List<string>();
-            foreach (IBookingObject table in BookableObjects)
-            {
-                if (table.Booking ==null)
-                {
-                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.MaxNumberOfGuests}.");
-                }
-                else
-                {
-                    string bookings = table.Booking.Aggregate("", (current, s) => current + ($"Booking={s.BookingGuest.Name},{s.BookingGuest.NumberOfGuests},{s.BookedTime.ToString("MM/dd/yyyy h:mm")}."));
-                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.LocatedOutside={table.MaxNumberOfGuests}.{bookings}");
-                }
-                    
-                
-            }
-            File.WriteAllLines(filepath, SaveToFile); 
 
         }
         private List<DateTimeAndGuestStruct> ImportBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
@@ -93,24 +76,55 @@ namespace Lab3.Restaurant
 
             List<DateTimeAndGuestStruct> DateAndTime = new List<DateTimeAndGuestStruct>() { };
 
-                var result = booking.Matches(fileText).ToList();
+            var result = booking.Matches(fileText).ToList();
 
-                foreach (Match match in result)
+            foreach (Match match in result)
+            {
+                DateTime tempDateD;
+                int tempPersons;
+                string name = match.Groups[1].Value;
+                bool successfullParse = DateTime.TryParse(match.Groups[3].Value, out tempDateD);
+                successfullParse = Int32.TryParse(match.Groups[2].Value, out tempPersons);
+
+                if (successfullParse)
                 {
-                    DateTime tempDateD;
-                    int tempPersons;
-                    string name = match.Groups[1].Value;
-                    bool successfullParse = DateTime.TryParse(match.Groups[3].Value, out tempDateD);
-                    successfullParse = Int32.TryParse(match.Groups[2].Value, out tempPersons);
-
-                    if (successfullParse)
-                    {
-                        DateAndTime.Add(new DateTimeAndGuestStruct(tempDateD, new Guest(name, tempPersons)));
-                    }
-
-
+                    DateAndTime.Add(new DateTimeAndGuestStruct(tempDateD, new Guest(name, tempPersons)));
                 }
+
+
+            }
             return DateAndTime;
         }
+
+        public void WriteBookingObjectFile() //Gör asynk här också så att det kan ladda från en plats istället.
+        {
+            string filepath = "Tables.txt";
+            List<string> SaveToFile = new List<string>();
+            foreach (IBookingObject table in BookableObjects)
+            {
+                if (table.Booking == null)
+                {
+                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.");
+                }
+                else
+                {
+                    string bookings = table.Booking.Aggregate("", (current, s) => current + ($"Booking={s.BookingGuest.Name},{s.BookingGuest.NumberOfGuests},{s.BookedTime.ToString("MM/dd/yyyy h:mm")}."));
+                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.{bookings}");
+                }
+
+
+            }
+            File.WriteAllLines(filepath, SaveToFile);
+
+        }
+        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests) //(DateTime bookedTime, Guest bookingGuest (string name, int numbersOfGuests))
+        {
+
+        }
+        public void RemoveBooking(int IndexOfTable, int IndexOfBooking)
+        {
+            BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
+        }
+
     }
 }

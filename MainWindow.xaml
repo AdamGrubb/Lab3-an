@@ -6,8 +6,58 @@
         xmlns:local="clr-namespace:Lab3"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <StackPanel>
-        <TextBlock x:Name="Testar" Height="150"/>
-        <Button x:Name="TestKnapp" Content="Här sparar du" Click="TestKnapp_Click"/>
-    </StackPanel>
+    <TabControl>
+        <TabItem Header="StartPage">
+            <WrapPanel Name="testaHär" Orientation="Vertical">
+                <Button x:Name="DeleteButton" Content="Delete"/>
+                <ListBox />
+
+            </WrapPanel>
+        </TabItem>
+        <TabItem Header="Booking">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
+                    <StackPanel>
+                        <DatePicker Margin="0,0,0,10"  FontSize="15"/>
+                        <TextBlock Text="Name:" FontSize="15" Margin="0,10,0,10"/>
+                        <TextBox x:Name="userNameInput" BorderBrush="Black" Width="100" HorizontalAlignment="Left" Margin="0,10,0,10"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Antal:" FontSize="15" Margin="0,10,0,10"/>
+                            <TextBlock FontSize="15" Text="10" Margin="10,10,20,10"/>
+                            <Button Width="15" Height="20" x:Name="SubtractGuest" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="-"></Button>
+                            <Button Width="15" Height="20" x:Name="AddGuest"  VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="+"></Button>
+                        </StackPanel>
+                        <Button Width="100" Height="30" Content="Delete Booking" x:Name="deleteBooking" Click="deleteBooking_Click"/>
+                        <ListBox x:Name="displayResults"/>
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="4">
+                    <WrapPanel x:Name="placeForAllBookings">
+                        
+                    </WrapPanel>
+
+                    
+                </Grid>
+            </Grid>
+
+        </TabItem>
+        <TabItem Header="Booked Times">
+
+
+        </TabItem>
+        
+    </TabControl>
+
 </Window>

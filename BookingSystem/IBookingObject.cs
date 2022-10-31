@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3.BookingSystem
 {
-    internal interface IBookingObject //Kan vara bord på restaurang, hotellrum, bowlingbana osv osv. 
+    public interface IBookingObject //Kan vara bord på restaurang, hotellrum, bowlingbana osv osv. 
     {
         string NameID { get; set; }
         int MaxNumberOfGuests { get; set; }

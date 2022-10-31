@@ -17,20 +17,18 @@ namespace Lab3.Tables
         public List<DateTimeAndGuestStruct> Booking { get; set; }
 
 
-        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside, List<DateTimeAndGuestStruct> booking)
+        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, List<DateTimeAndGuestStruct> booking)
         {
             NameID = tableNumber;
             MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
-            LocatedOutside = locatedOutside;//Här har vi ju ett nytt fält. Ska det vara kvar??
             Booking = booking;
         }
-        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, bool locatedOutside)
+        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable)
         {
             NameID = tableNumber;
             MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
-            LocatedOutside = locatedOutside;//Här har vi ju ett nytt fält. Ska det vara kvar??
         }
         public void BookATime(Guest BookingGuest, DateTime BookedTime)
         {
