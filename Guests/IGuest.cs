@@ -10,6 +10,6 @@ namespace Lab3.Guests
     {
         string Name { get; }
         int NumberOfGuests { get; }
-
+        public string? Comments { get; set; }
     }
 }

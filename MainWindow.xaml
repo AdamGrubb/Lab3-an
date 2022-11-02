@@ -8,10 +8,8 @@
         Title="MainWindow" Height="450" Width="800">
     <TabControl>
         <TabItem Header="StartPage">
-            <WrapPanel Name="testaHär" Orientation="Vertical">
-                <Button x:Name="DeleteButton" Content="Delete"/>
-                <ListBox />
-
+            <WrapPanel>
+                <TextBlock x:Name="HärSkadetTestas" Width="300" Height="300"/>
             </WrapPanel>
         </TabItem>
         <TabItem Header="Booking">
@@ -30,25 +28,29 @@
                 </Grid.RowDefinitions>
                 <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
                     <StackPanel>
-                        <DatePicker Margin="0,0,0,10"  FontSize="15"/>
-                        <TextBlock Text="Name:" FontSize="15" Margin="0,10,0,10"/>
-                        <TextBox x:Name="userNameInput" BorderBrush="Black" Width="100" HorizontalAlignment="Left" Margin="0,10,0,10"/>
+                        <DatePicker Margin="0,0,0,10"  FontSize="15" x:Name="ChosenDate"/>
+                        <TextBlock Text="Pick time:" FontSize="15"/>
+                        <ComboBox x:Name="TimePicker" ItemStringFormat = "{}{0:hh}:{0:mm}"/>
+                        <TextBlock Text="Name:" FontSize="15" />
+                        <TextBox x:Name="userNameInput" BorderBrush="Black" Width="100" HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Antal:" FontSize="15" Margin="0,10,0,10"/>
-                            <TextBlock FontSize="15" Text="10" Margin="10,10,20,10"/>
-                            <Button Width="15" Height="20" x:Name="SubtractGuest" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="-"></Button>
-                            <Button Width="15" Height="20" x:Name="AddGuest"  VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="+"></Button>
+                            <TextBlock Text="Personer:" FontSize="15" Margin="0,10,0,10"/>
+                            <TextBlock FontSize="15" Text="{Binding NumberOfPerson}" Margin="10,10,20,10" x:Name="NumberOfPersons"/>
+                            <Button Width="15" Height="20" x:Name="SubtractGuest" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="-" Click="SubtractGuest_Click"></Button>
+                            <Button Width="15" Height="20" x:Name="AddGuest"  VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="+" Click="AddGuest_Click"></Button>
                         </StackPanel>
-                        <Button Width="100" Height="30" Content="Delete Booking" x:Name="deleteBooking" Click="deleteBooking_Click"/>
-                        <ListBox x:Name="displayResults"/>
+                        <TextBlock Text="Available Tables" FontSize="15"/>
+                        <ComboBox x:Name="ChooseTable"/>
+                        <TextBlock Text="Extra info:" FontSize="15"/>
+                        <TextBox Height="50" Background="LightYellow" TextWrapping="Wrap" Name="ExtraInfoBox"/>
+                        <Button Width="100" Height="30" Content="Delete Booking" x:Name="deleteBooking"/>
+                        <Button Content="Boka" Width="100" Height="30" x:Name="BookingButton" Click="BookingButton_Click"/>
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="4">
                     <WrapPanel x:Name="placeForAllBookings">
                         
                     </WrapPanel>
-
-                    
                 </Grid>
             </Grid>
 
@@ -57,7 +59,16 @@
 
 
         </TabItem>
-        
+        <TabItem Header="ManagerControl">
+            <StackPanel>
+                <TextBlock Text="Add Tables, View Tables, Sett sittingTime = Sätter tidsspannet för vad man kan boka." FontSize="20"/>
+                <TextBlock Text="Sätta bordbegränsning för hur många som får sitta?" FontSize="20"/>
+                <TextBlock Text="Remove table som fördelar ut bokningarna på de andra borden som är lediga." FontSize="20"/>
+
+            </StackPanel>
+
+        </TabItem>
+
     </TabControl>
 
 </Window>

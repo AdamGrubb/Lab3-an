@@ -29,303 +29,132 @@ namespace Lab3
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        SelectionChangedEventArgs chosen = null;
-        public List<string> tableOneBookings { get; set; }
-        //public List<DateTimeAndGuestStruct> Table1 = new List<DateTimeAndGuestStruct>();
-
-        ListBox EttBordTider;
-        Restaurants Azteka = new Restaurants();
+        private int _numberOfPerson = 1;
+        public int NumberOfPerson
+        {
+            get
+            {
+                return _numberOfPerson;
+            }
+            set
+            {
+                _numberOfPerson = value;
+                OnPropertyChanged(nameof(NumberOfPerson));
+            }
+        }
+        private Restaurants SnuskigaFisken = new Restaurants();
+        List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan ( 16, 00, 00 ) },{ new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) },{ new TimeSpan(18, 00, 00) },{ new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
+        public event PropertyChangedEventHandler? PropertyChanged;
         public MainWindow()
         {
             InitializeComponent();
-            Restaurants Azteka = new Restaurants();
-            viewmodel Aztuka = new viewmodel();
-            //var Tabbles = Azteka.BookableObjects.Select(tabless=>tabless.
 
-            //StartListen.DisplayMemberPath = Table1.BookedTime;
-            //GenerateTableBookings();
-            GenerateDatesAnd();
-        }
-        public void GenerateBookings()
-        {
-            tableOneBookings = Azteka.BookableObjects.SelectMany(table => table.Booking).Select(booking => booking.BookedTime).Select(date => "Booked Times:" + date.ToString("HH:mm")).ToList();
-        }
-
-        private void GenerateDatesAnd()
-        {
-            List<List<string>> SamlaDettaILista = new List<List<string>>();
-            List<string> tableName = new List<string>();
-            int tableNamezz = 0;
-
-            foreach (IBookingObject table in Azteka.BookableObjects)
-            {
-                SamlaDettaILista.Add(table.Booking.Select(x=> $"Guest: {x.BookingGuest.Name}.  Booked Time: {x.BookedTime.ToString("HH:mm")}.").ToList());
-                tableName.Add(table.NameID);
-            }
-
-            //------------------------------------------------------------------------------
-            //List<List<string>> allaBokadeTider=new List<List<string>>();
-            //foreach (List<string> tableBookings in SamlaDettaILista)
-            //{
-            //    placeForAllBookings.Children.Add(new Label()
-            //    {
-            //     Background = Brushes.LightGray,
-            //     Content = tableName[tableNamezz],
-            //     //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-            //     BorderBrush = Brushes.LightSlateGray,
-            //     BorderThickness = new Thickness(5),
-            //     Margin=new Thickness(0,10,0,0)
-            //    });
-            //    placeForAllBookings.Children.Add(new ListBox() {ItemsSource=tableBookings, Margin=new Thickness(0,0,0,10), Background = Brushes.LightYellow });
-            //    tableNamezz++;
-            //}
-            //------------------------------------------------------------------
-            List<Label> LabelList = new List<Label>();
-            List<ListBox> ListboxList = new List<ListBox>();
-
-            foreach (List<string> tableBookings in SamlaDettaILista)
-            {
-                placeForAllBookings.Children.Add(new StackPanel());
-                LabelList.Add(new Label()
-                {
-                    Background = Brushes.LightGray,
-                    Content = tableName[tableNamezz],
-                    //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-                    BorderBrush = Brushes.LightSlateGray,
-                    BorderThickness = new Thickness(5)
-                });
-                ListboxList.Add(new ListBox() { ItemsSource = tableBookings, Background = Brushes.LightYellow, Margin = new Thickness(0, 0, 0, 20), });
-                tableNamezz++;
-            }
-            int test = 0;
-            foreach (StackPanel tablePresentation in placeForAllBookings.Children)
-            {
-                tablePresentation.Children.Add(LabelList[test]);
-                tablePresentation.Children.Add(ListboxList[test]);
-                test++;
-            }
-            //---------------------------------------------------------------------
-
-
-
-            //StartListen1.ItemsSource = Tempirrär1;
-            //StartListen2.ItemsSource = Tempirrär2;
-            //StartListen3.ItemsSource = Tempirrär3;  
-            //StartListen4.ItemsSource = Tempirrär4;
-            //StartListen5.ItemsSource = Tempirrär5;
-            //StartListen6.ItemsSource = Tempirrär6;
-            //StartListen7.ItemsSource = Tempirrär7;
-        }
-
-        private void whichOneIsSelected(object sender, SelectionChangedEventArgs e)
-        {
-            e.
-        }
-
-        private void deleteBooking_Click(object sender, RoutedEventArgs e, SelectionChangedEventArgs chosen)
-        {
-            chosen.
-            Azteka.RemoveBooking
+            this.DataContext = this;
+            TimePicker.ItemsSource = Availabletimes;
+            ChooseTable.ItemsSource = SnuskigaFisken.ListTableID; //Selectchange på Calender, Tid Eller Guest ska uppdatera BordsListan till de bord som är lediga under de förutsättningarna.
+            fillTestField();
         }
 
 
-        //private void GenerateTableBookings() //Den här genererar en översyn på vilka bokningar vilka bord har. Går det att fixa en delete därifrån? Antagligen inte. Kan man få ut index härifrån?? Ja via regex, testa!
+
+
+
+        //public List<string> GetTimeIntervals()
         //{
-
-        //    List<List<Dictionary<string, string>>> SecondTableList = new List<List<Dictionary<string, string>>>(); //Jag kanske ska ha en Dictonary här?? där Nyckeln är index för vilket bord det är och Value är en List<string>. Går det då att få ut nyckeln?
-        //    int påFyllning = 0;
-        //    StackPanel BordsBokning = new StackPanel();
-
-        //    foreach (IBookingObject table in Azteka.BookableObjects)
+        //    List<string> timeIntervals = new List<string>();
+        //    TimeSpan startTime = new TimeSpan(0, 0, 0);
+        //    DateTime startDate = new DateTime(DateTime.MinValue.Ticks); // Date to be used to get shortTime format.
+        //    for (int i = 0; i < 48; i++)
         //    {
-        //        SecondTableList.Add(new List<Dictionary<string, string>>());
-        //        {
-        //            for (int x = 0; x < table.Booking.Count; x++)
-        //            {
-
-        //                new Dictionary<string, string>() { { table.NameID, $"{table.Booking[x].BookingGuest.Name} has booked {table.Booking[x].BookedTime.ToString("F")}" } };
-        //            }
-        //        }
+        //        int minutesToBeAdded = 30 * i;      // Increasing minutes by 30 minutes interval
+        //        TimeSpan timeToBeAdded = new TimeSpan(0, minutesToBeAdded, 0);
+        //        TimeSpan t = startTime.Add(timeToBeAdded);
+        //        DateTime result = startDate + t;
+        //        timeIntervals.Add(result.ToShortTimeString());      // Use Date.ToShortTimeString() method to get the desired format                
         //    }
-        //    foreach (List<Dictionary<string, string>> table in SecondTableList)
-        //    {
-
-        //            table.Add(new Dictionary<string, string> () { { SecondTableList[påFyllning], $"{table.Booking[x].BookingGuest.Name} has booked {table.Booking[x].BookedTime.ToString("F")}" } });
-        //        }
-        //    påFyllning++;
-        //    }
-        //    foreach (List<Dictionary<string, string>> bookings in SecondTableList)
-        //    {
-        //        placeForAllBookings.Children.Add(new StackPanel());
-        //    }
-
-        //    foreach (StackPanel stackpanelll in placeForAllBookings.Children)
-        //    {
-        //        int y = 0;
-        //        stackpanelll.Children.Add(new Label()
-        //        {
-        //            Background = Brushes.LightGray,
-        //            //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-        //            BorderBrush = Brushes.LightSlateGray,
-        //            BorderThickness = new Thickness(5)
-
-        //        });
-
-        //        stackpanelll.Children.Add(new ListBox()
-        //        {
-        //            ItemsSource = SecondTableList[y]
-        //            //DisplayMemberPath= Hur får man dit att den ska använda nyckeln=??
-        //        }
-
-        //            );
-
-        //    }
+        //    return timeIntervals;
         //}
 
 
-        //foreach (StackPanel stackpanelll in placeForAllBookings.Children)
-        //                    {
-        //                        stackpanelll.Children.Add(new Label()
-        //                        {
-        //                            Background = Brushes.LightGray,
-        //                            Content = "TablePlaceholder",
-        //                            //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-        //                            BorderBrush = Brushes.LightSlateGray,
-        //                            BorderThickness = new Thickness(5)
-
-        //                        });
 
 
-        //        foreach (IBookingObject table in Azteka.BookableObjects)
+        //--------------------------------
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void SubtractGuest_Click(object sender, RoutedEventArgs e)
+        {
+            if (NumberOfPerson > 1) NumberOfPerson--;
+        }
+
+        private void AddGuest_Click(object sender, RoutedEventArgs e)
+        {
+            if (NumberOfPerson < 8) NumberOfPerson++;
+            else
+            {
+                MessageBox.Show("For bookings over 8 person, make custom booking.", "Big Booking"); //Om jag orkar göra en custom booking-grej. Antagligen inte. Annars tabort.
+            }
+        }
+
+        private void BookingButton_Click(object sender, RoutedEventArgs e) //Gör en röd border på det som behöver fixas och skicka upp en messagebox.
+        {
+            if (UserInputNullCheck())
+            {
+                int guestNumbers = NumberOfPerson;
+                DateTime dateAndTime = ChosenDate.SelectedDate.Value;
+                dateAndTime= dateAndTime.Add((TimeSpan)TimePicker.SelectedValue); //Kolla om det här fungerar.
+                string nameOfGuest = userNameInput.Text;
+                int tableID = ChooseTable.SelectedIndex;
+
+                if (ExtraInfoBox.Text != string.Empty)
+                {
+                    string ExtraInfo = ExtraInfoBox.Text;
+                    SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableID); //AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment)
+                }
+                else SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, tableID); //(DateTime Chosentime, string GuestName, int numberOfGuests)
+            }
+            else MessageBox.Show("Du har inte fyllt i alla fält idiot.");
+
+        }
+
+        private bool UserInputNullCheck()
+        {
+            if (ChooseTable.SelectedValue ==null || userNameInput.Text == null || ChosenDate.SelectedDate == null || TimePicker.SelectedValue == null)
+            {
+               return false;
+            }
+            else return true;
+        }
+        private void fillTestField()
+        {
+            //List<List<ObservableCollection<string>>>
+            //HärSkadetTestas
+            foreach (List<ObservableCollection<string>> Test in SnuskigaFisken.SeperatedTables)
+            {
+                foreach (ObservableCollection<string> TestLager2 in Test)
+                {
+                    foreach (string TestLager3 in TestLager2)
+                    {
+                        HärSkadetTestas.Text += TestLager3+"\n";
+                    }
+                }
+            }
+
+        }
+
+        //private void CreateTimeSpans() //Här kan du skapa vilka tider du vill ha möjliga att välja bland. Samt sätta itemsource på comboboxen
         //{
-        //    SecondTableList.Add(new List<Dictionary<string, string>>()
-        //{
-
-        //                foreach (DateTimeAndGuestStruct date in table.Booking)
-        //            {
-        //                new Dictionary<string, string>()
-        //                                        {
-        //                                            {table.NameID,date.BookedTime.ToString("f") }
-        //                                        };
-        //            }
-        //        }
-
-
-
+        //    for (int i = 0; i < 10; i++)
+        //    {
 
         //    }
-        //};
+        //}
     }
 }
-
-//        }      //table.Booking.Select(date => $"{date.BookingGuest.Name} has booked {date.BookedTime.ToString("f")}")
-
-//            foreach (List<Dictionary<string, string>> table in SecondTableList)
-//                    {
-//                        table.Add()
-//}
-//                    foreach (List<Dictionary<string, string>> bookings in SecondTableList)
-//                    {
-//                        placeForAllBookings.Children.Add(new StackPanel());
-//                    }
-//                    foreach (StackPanel stackpanelll in placeForAllBookings.Children)
-//                    {
-//                        stackpanelll.Children.Add(new Label()
-//                        {
-//                            Background = Brushes.LightGray,
-//                            Content = "TablePlaceholder",
-//                            //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-//                            BorderBrush = Brushes.LightSlateGray,
-//                            BorderThickness = new Thickness(5)
-
-//                        });
-//                        foreach (List<Dictionary<string, string>> bookings in SecondTableList)
-//                        {
-//                            stackpanelll.Children.Add(new Label()
-//                            {
-//                                Background = Brushes.LightGray,
-//                                Content = bookings.ToString(),
-//                                //rubrik.Content = "Table: " + table.NameID; //Den här kan du ju köra efteråt nu har du ju strukturen. Kanske en linq?
-//                                BorderBrush = Brushes.LightSlateGray,
-//                                BorderThickness = new Thickness(5)
-//                            });
-//                            stackpanelll.Children.Add(new ListBox() { ItemsSource = bookings });
-//                        }
-//                    }
-//                }
-            
-
-//                    //List<string> SecondTableList = table.Booking.OrderBy(x=>x.BookedTime).Select(date => date.BookingGuest.Name+ " has booked: " + date.BookedTime).ToList();
-//                    //List<string> SecondTableList = table.Booking.Select(date => date.BookingGuest.Name + " has booked: " + date.BookedTime).ToList();
-
-
-
-//                    //private void deleteBooking_Click(object sender, RoutedEventArgs e)
-//                    //{
-//                    //    List<string> vadÄrDetta = new List<string>();
-//                    //    vadÄrDetta.Add(EttBordTider.SelectedValue.ToString());
-//                    //    vadÄrDetta.Add(EttBordTider.SelectedValuePath.ToString());
-//                    //    vadÄrDetta.Add(EttBordTider.SelectedIndex.ToString());
-//                    //    vadÄrDetta.Add(EttBordTider.SelectedItem.ToString());
-//                    //    displayResults.ItemsSource = vadÄrDetta;
-
-
-//                    //}
-
-//                    //private void DeleteButton_Click(object sender, RoutedEventArgs e) //Göra en select
-//                    //{
-//                    //    if (StartListen1.SelectedIndex != -1) Azteka.BookableObjects[0].Booking.RemoveAt(StartListen1.SelectedIndex);
-//                    //    else if(StartListen2.SelectedIndex != -1) Azteka.BookableObjects[1].Booking.RemoveAt(StartListen2.SelectedIndex);
-//                    //    else if (StartListen3.SelectedIndex != -1) Azteka.BookableObjects[2].Booking.RemoveAt(StartListen3.SelectedIndex);
-//                    //    else if (StartListen4.SelectedIndex != -1) Azteka.BookableObjects[3].Booking.RemoveAt(StartListen4.SelectedIndex);
-//                    //    else if (StartListen5.SelectedIndex != -1) Azteka.BookableObjects[4].Booking.RemoveAt(StartListen5.SelectedIndex);
-//                    //    else if (StartListen6.SelectedIndex != -1) Azteka.BookableObjects[5].Booking.RemoveAt(StartListen6.SelectedIndex);
-//                    //    else if (StartListen7.SelectedIndex != -1) Azteka.BookableObjects[6].Booking.RemoveAt(StartListen7.SelectedIndex);
-//                    //    GenerateDatesAnd();
-//                    //    Azteka.WriteBookingObjectFile();
-//                    //}
-
-
-
-//                    //private List<DateTimeAndGuestStruct> CheckIfTimeIsFree(DateTime AvailableDate)
-//                    //{
-//                    //    /*
-//                    //     * Kolla här hur man gör för att aggregate när man har ett bool-statement. Kolla också hur det fungerar att jämföra två DateTime-objects.
-//                    //     * Problemet nu är inte bara att man ska jämföra date time objekt utan också att du ska jämföra en timespann. Ta t ex en bokad tid och 2 timmar framåt i jämförelse.
-//                    //     * Kan vara så att du måste öppna upp Aggregate så att den jämför before, i och after.
-//                    //     * Du kan ju också lägga in alla andra olika jämförelser, typ handikapp, platser osv osv
-//                    //     */
-
-//                    //    //Foreacha varje bojekt i listan, och där gör du ett urval om just det läggs till i listan! Får man då rätt index i Listbox??
-
-//                    //    foreach (IBookingObject in )
-
-//                    //    var freeTables = Azteka.BookableObjects.Select(table => table.Booking).Select(booking => booking.); 
-
-//                    //        foreach (IBookingObject table in Azteka.BookableObjects)
-//                    //        {
-//                    //            foreach (DateTimeAndGuestStruct booking in table.Booking)
-//                    //            {
-//                    //                if (booking.BookedTime.Equals(AvailableDate)==false)
-//                    //                {
-//                    //                ListBox16.ItemsSource.Cast //Hur lägger man till något till listbox
-//                    //                } 
-//                    //                //Eller så har jag Restaurant som har olika funktioner för att ge ifrån sig listor.
-//                    //                // Samt även en metod för att lägga till en bokning eller ta bort en bokning.
-
-
-
-//                    //            }
-//                    //        }
-
-//                    //    //.SelectMany(x => x.Booking).Aggregate(0, (AMatch, datum) => datum.BookedTime.Equals(AvailableDate) ? AMatch + 1 : AMatch); ; //Problemet är ifall det ite finns ett datum, då blir det null. Sortera sort nullarna.
-
-//                    //    //return freeTables; //Azteka.BookableObjects.Count() - occupiedTables;
-
-
-//                    //}
-//                }
-//            }
-//        }
