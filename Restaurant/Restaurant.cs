@@ -97,6 +97,21 @@ namespace Lab3.Restaurant
 
 
         }
+
+        /*  //Skapa fil
+            string fileName = "WeatherForecast.json";
+
+            //Skapa en filström
+            using FileStream createStream = File.Create(fileName);
+
+            // Serialisera datan asynkront
+            await JsonSerializer.SerializeAsync(createStream,
+            weatherForecast);
+
+            // Skriv datan asynkront
+            await createStream.DisposeAsync();
+            Console.WriteLine(File.ReadAllText(fileName));
+        */
         private List<DateTimeAndGuestStruct> ImportBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
         {
             Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
