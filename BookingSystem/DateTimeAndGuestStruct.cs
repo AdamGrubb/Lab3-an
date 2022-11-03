@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lab3.BookingSystem
 {
-    public struct DateTimeAndGuestStruct //Is the information that is going to be saved to database/textfile with information of the guest and the booked datetime.
+    public class DateTimeAndGuestStruct //Is the information that is going to be saved to database/textfile with information of the guest and the booked datetime.
     {
         public DateTime BookedTime { get; set; }
         public Guest BookingGuest { get; set; }
@@ -16,5 +16,7 @@ namespace Lab3.BookingSystem
             BookedTime = bookedTime;
             BookingGuest = bookingGuest;
         }
+        public DateTimeAndGuestStruct()
+        { }
     }
 }

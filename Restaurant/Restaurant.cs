@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,16 +22,24 @@ namespace Lab3.Restaurant
         public List<IBookingObject> BookableObjects { get; set; }
         public List<List<ObservableCollection<string>>> SeperatedTables { get; set; } //Här har du en List där varje List<Dictionary<string, string>> motsvarar ett table. Där Key märks med bokningarna och Value blir bordets märkning.
 
-        public List<string> ListTableID = new List<string>();
+        public ObservableCollection<string> ListTableID = new ObservableCollection<string>();
         private string[] LoadedFileText { get; set; }
         public Restaurants()
         {
-            LoadedFileText = LoadBookingObjectFile();
+            //LoadedFileText = LoadBookingObjectFile();
             //if (!LoadedFileText == null); //Vad händer då? Skapa en felruta i programmet som säger att det inte kunde laddas. 
-            BookableObjects = ExtractBookingObjectFields(LoadedFileText);
+            //BookableObjects = ExtractBookingObjectFields(LoadedFileText);
+            startUp();
+
+
+
+        }
+        private async void startUp()
+        {
+            await LoadFromFile();
+
             FillSeperatedTables();
             FillTableID();
-
         }
         public string[] LoadBookingObjectFile() //Hur ska jag lösa det här? En varning kan ploppa upp att det inte existerar några bord, ge möjlighet att skapa? Antagligen inte. En try-catch här. Göra denna till async?
         {
@@ -52,7 +61,7 @@ namespace Lab3.Restaurant
         }
         private void FillTableID()
         {
-            ListTableID = BookableObjects.Select(tableID => tableID.NameID).ToList();
+            ListTableID = new ObservableCollection<string>(BookableObjects.Select(tableID => tableID.NameID).ToList());
         }
         private void FillSeperatedTables() //Den här infon kan användas för att göra en Lista över borden. 
         {
@@ -97,6 +106,31 @@ namespace Lab3.Restaurant
 
 
         }
+        private async void SaveToFile()
+        {
+            List<Table> BordsBokningar = new List<Table>();
+            foreach (IBookingObject table in BookableObjects)
+            {
+                BordsBokningar.Add((Table)table);
+            }
+            string fileName = "BookingData.json";
+            using FileStream createStream = File.Create(fileName);
+            await JsonSerializer.SerializeAsync(createStream,
+            BordsBokningar);
+            await createStream.DisposeAsync();
+        }
+        private async Task LoadFromFile()
+        {
+            string fileName = "BookingData.json";
+            using FileStream openStream = File.OpenRead(fileName);
+            var BordsBokningar = JsonSerializer.Deserialize<List<Table>>(openStream);
+            BookableObjects = new List<IBookingObject>();
+            //List<IBookingObject> transfer = new List<IBookingObject>();
+            foreach (Table table in BordsBokningar)
+            {
+                BookableObjects.Add(table);
+            }
+        }
 
         /*  //Skapa fil
             string fileName = "WeatherForecast.json";
@@ -112,6 +146,13 @@ namespace Lab3.Restaurant
             await createStream.DisposeAsync();
             Console.WriteLine(File.ReadAllText(fileName));
         */
+
+        /*
+         * using FileStream openStream = File.OpenRead(fileName);
+            List<WeatherForecast>? getWeatherForecast =
+                await JsonSerializer.DeserializeAsync<List<WeatherForecast>>(openStream);
+
+         * */
         private List<DateTimeAndGuestStruct> ImportBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
         {
             Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
@@ -162,6 +203,7 @@ namespace Lab3.Restaurant
         public void AddBooking(DateTime Chosentime, string GuestName, int numberOfGuests, int tableID) //(DateTime bookedTime, Guest bookingGuest (string name, int numbersOfGuests))
         {
             BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct (Chosentime,new Guest(GuestName, numberOfGuests)));
+            SaveToFile();
             MessageBox.Show("Added Booking");
             WriteBookingObjectFile();
         }

@@ -30,6 +30,8 @@ namespace Lab3.Tables
             MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
         }
+        public Table()
+        { }
         public void BookATime(Guest BookingGuest, DateTime BookedTime)
         {
             Booking.Add(new DateTimeAndGuestStruct(BookedTime, BookingGuest));

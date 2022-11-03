@@ -31,6 +31,7 @@ namespace Lab3
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        Restaurants SnuskigaFisken = new Restaurants();
         private int _numberOfPerson = 1;
         public int NumberOfPerson
         {
@@ -44,17 +45,16 @@ namespace Lab3
                 OnPropertyChanged(nameof(NumberOfPerson));
             }
         }
-        private Restaurants SnuskigaFisken = new Restaurants();
         List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan ( 16, 00, 00 ) },{ new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) },{ new TimeSpan(18, 00, 00) },{ new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
         public event PropertyChangedEventHandler? PropertyChanged;
         public MainWindow()
         {
+            //SnuskigaFisken = new Restaurants();
             InitializeComponent();
-
+            
             this.DataContext = this;
             TimePicker.ItemsSource = Availabletimes;
             ChooseTable.ItemsSource = SnuskigaFisken.ListTableID; //Selectchange på Calender, Tid Eller Guest ska uppdatera BordsListan till de bord som är lediga under de förutsättningarna.
-            fillTestField();
         }
 
 
@@ -131,22 +131,6 @@ namespace Lab3
                return false;
             }
             else return true;
-        }
-        private void fillTestField()
-        {
-            //List<List<ObservableCollection<string>>>
-            //HärSkadetTestas
-            foreach (List<ObservableCollection<string>> Test in SnuskigaFisken.SeperatedTables)
-            {
-                foreach (ObservableCollection<string> TestLager2 in Test)
-                {
-                    foreach (string TestLager3 in TestLager2)
-                    {
-                        HärSkadetTestas.Text += TestLager3+"\n";
-                    }
-                }
-            }
-
         }
 
         //private void CreateTimeSpans() //Här kan du skapa vilka tider du vill ha möjliga att välja bland. Samt sätta itemsource på comboboxen
