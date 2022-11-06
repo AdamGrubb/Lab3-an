@@ -4,112 +4,119 @@ using Lab3.Tables;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Policy;
 using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Navigation;
+using System.Xml.Linq;
 
 namespace Lab3.Restaurant
 {
-    internal class Restaurants : IBookingSystem //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
+    internal class Restaurants : IBookingSystem, INotifyPropertyChanged //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
+
+    //Lägg till en Inotify och kör det istället för massa ObservableCollections.
     {
         public List<IBookingObject> BookableObjects { get; set; }
-        public List<List<ObservableCollection<string>>> SeperatedTables { get; set; } //Här har du en List där varje List<Dictionary<string, string>> motsvarar ett table. Där Key märks med bokningarna och Value blir bordets märkning.
+        public List<List<string>> SeperatedTables { get; set; } //Den här är tänkt att användas i en dynamisk Listbox-grej. Då varje List<ObservableCollection<string>> är ett "Table" och string är bokningarna.
 
-        public ObservableCollection<string> ListTableID = new ObservableCollection<string>();
+        //public List<string> _listTableIB;
+        public ObservableCollection<string> ListTableID { get; set; }
+        public Dictionary<string, int[]> DisplayAllBookings { get; set; }
+
+        public ObservableCollection<string> DisplayAllBookins { get; set; } //Testar lista alla bokningar
         private string[] LoadedFileText { get; set; }
         public Restaurants()
         {
-            //LoadedFileText = LoadBookingObjectFile();
-            //if (!LoadedFileText == null); //Vad händer då? Skapa en felruta i programmet som säger att det inte kunde laddas. 
-            //BookableObjects = ExtractBookingObjectFields(LoadedFileText);
-            startUp();
-
-
-
+            UpdateLists();
         }
-        private async void startUp()
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private async void UpdateLists() //Den här måste felhanteras för att kunna ta emot en tom fil. Temporär lösning.
         {
             await LoadFromFile();
-
-            FillSeperatedTables();
-            FillTableID();
-        }
-        public string[] LoadBookingObjectFile() //Hur ska jag lösa det här? En varning kan ploppa upp att det inte existerar några bord, ge möjlighet att skapa? Antagligen inte. En try-catch här. Göra denna till async?
-        {
-            string[] loadTextFromFile;
-            string filepath = "Tables.txt";
-            //await Task.Delay(4000);
-            FileInfo fi = new FileInfo(filepath);
-            if (fi.Exists)
+            if (BookableObjects==null)
             {
-                return loadTextFromFile = File.ReadAllLines(filepath).ToArray();
+                BookableObjects = new List<IBookingObject>();
+                ListTableID = new ObservableCollection<string>();
             }
             else
             {
-                fi.Create();
-                return null;
+                //FillSeperatedTables();
+                FillTableID();
+                FillDisplayAllBookings();
             }
 
+        }
+        public void FillTableID()
+        {
+            ListTableID = new ObservableCollection<string> (BookableObjects.Select(tableID => tableID.NameID).ToList());
 
         }
-        private void FillTableID()
+        public void FillDisplayAllBookings() // fixa null-hantering här
         {
-            ListTableID = new ObservableCollection<string>(BookableObjects.Select(tableID => tableID.NameID).ToList());
-        }
-        private void FillSeperatedTables() //Den här infon kan användas för att göra en Lista över borden. 
-        {
-            List<List<ObservableCollection<string>>> listOfTables = new List<List<ObservableCollection<string>>>();
 
+            DisplayAllBookins = new ObservableCollection<string>(BookableObjects.SelectMany(table => table.Booking).Select(booking => $"Guest: {booking.BookingGuest.Name}    Date:{booking.BookedTime.ToString("f")}\n").ToList());
+            int indexOfTable = 0;
+
+            DisplayAllBookings = new Dictionary<string, int[]>();
+            //DisplayAllBookings = BookableObjects.SelectMany(table=>table.Booking).ToDictionary(bookings=> bookings.BookedTime)
+
+            //BookableObjects.SelectMany(table => table.Booking).ToDictionary(booking => $"Guest:{booking.BookingGuest} Bookedtime: {booking.BookedTime}", index => new int[] { table.ID, indexOfBooking++ });
+
+            foreach (IBookingObject tables in BookableObjects)
+            {
+                int indexOfBooking = 0;
+                var ärDetta= tables.Booking.ToDictionary(DateAndGuest => $"Table: {BookableObjects[indexOfTable].NameID} Guest:{DateAndGuest.BookingGuest.Name} Bookedtime: {DateAndGuest.BookedTime}", index => new int[] { indexOfTable, indexOfBooking++ });
+                indexOfTable++;
+
+                foreach (KeyValuePair<string, int[]> bookings in ärDetta)
+                {
+                    DisplayAllBookings.Add(bookings.Key, bookings.Value);
+                }
+            }
+            for (int x =0; x<DisplayAllBookings.Count;x++)
+            {
+
+            }
+            //DisplayAllBookings = BookableObjects.SelectMany(table => $"Table {table.NameID} {table.Booking)"
+
+
+        }
+        public void FillSeperatedTables(DateTime SelectedDay)
+        {
+            List<List<string>> listOfTables = new List<List<string>>();
+            int indexOfTables = 0;
             foreach (IBookingObject table in BookableObjects)
             {
-
-                listOfTables.Add(new List<ObservableCollection<string>>() { });
+                listOfTables.Add(BookableObjects[indexOfTables].Booking.Where(booking =>booking.BookedTime.Date.Equals(SelectedDay.Date)).Select(tables => $"Guest: {tables.BookingGuest.Name} Date: {tables.BookedTime.ToString("dd/MM/yyyy H:mm")}").ToList());
+                //listOfTables.Add(new ObservableCollection<string>(BookableObjects[indexOfTables].Booking.Select(d => $"Guest: {d.BookingGuest.Name} Date: {d.BookedTime.ToString("dd/MM/yyyy H:mm")}").ToList()));
+                indexOfTables++;
             }
-            for (int i = 0; i < BookableObjects.Count; i++)
-            {
-                var vadÄr = BookableObjects[i].Booking.Select(d => $"{d.BookingGuest.Name} has booked {d.BookedTime.ToString("f")}").ToList();
 
-                listOfTables[i].Add(new ObservableCollection<string>(BookableObjects[i].Booking.Select(d => $"{d.BookingGuest.Name} has booked {d.BookedTime.ToString("f")}").ToList()));
-            }
             SeperatedTables = listOfTables;
         }
-
-        public List<IBookingObject> ExtractBookingObjectFields(string[] fileText) //Här har du ett eventuellt fel om det inte blir nån matchning. Gör en If Match>0 {} sen foreachen, annars return null.
-        {
-            List<IBookingObject> tables = new List<IBookingObject>();
-            Regex tableInfo = new Regex(@"TableNumber=(\d+)\.NumberOfSeats=(\d+)\.WheelChairAccessable=(True|False)\.");
-            Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2})."); //Återanvända den här??
-
-            foreach (string Line in fileText)
-            {
-                List<DateTimeAndGuestStruct> Bookings = ImportBookings(Line);
-                string tableNumber = tableInfo.Match(Line).Groups[1].Value;
-                int numberOfSeats;
-                bool wheelChairAccessable;
-                bool locatedOutside; //Här har vi ju ett nytt fält. Ska det vara kvar??
-                bool ifWorks = Int32.TryParse(tableInfo.Match(Line).Groups[2].Value, out numberOfSeats);
-                if (ifWorks == false) continue;
-                ifWorks = Boolean.TryParse(tableInfo.Match(Line).Groups[3].Value, out wheelChairAccessable);
-                if (ifWorks == false) continue;
-
-                if (Bookings.Count < 1) tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable)); //Här har vi ju ett nytt fält. Ska det vara kvar??
-                else tables.Add(new Table(tableNumber, numberOfSeats, wheelChairAccessable, Bookings));
-            }
-            return tables;
-
-
-        }
-        private async void SaveToFile()
+        private async Task SaveToFile() //Kanske sa ha en UppdateList på SaveToFile??
         {
             List<Table> BordsBokningar = new List<Table>();
-            foreach (IBookingObject table in BookableObjects)
+            foreach (IBookingObject table in BookableObjects) //Här kanske du kan spara ner det som IBookingobjekt från början.
             {
                 BordsBokningar.Add((Table)table);
             }
@@ -119,101 +126,68 @@ namespace Lab3.Restaurant
             BordsBokningar);
             await createStream.DisposeAsync();
         }
-        private async Task LoadFromFile()
+        public async Task LoadFromFile()
         {
             string fileName = "BookingData.json";
-            using FileStream openStream = File.OpenRead(fileName);
-            var BordsBokningar = JsonSerializer.Deserialize<List<Table>>(openStream);
-            BookableObjects = new List<IBookingObject>();
-            //List<IBookingObject> transfer = new List<IBookingObject>();
-            foreach (Table table in BordsBokningar)
+            FileInfo fileInfo = new FileInfo(fileName);
+            if (fileInfo.Exists) //Hur felhanterar man att det försöker ladda in en tom fil??
             {
-                BookableObjects.Add(table);
+                using FileStream openStream = File.OpenRead(fileName);
+                List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(openStream);
+                BookableObjects = new List<IBookingObject>();
+                foreach (Table table in BordsBokningar)
+                {
+                    table.Booking=table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
+                    BookableObjects.Add(table);
+                }
+                
             }
         }
-
-        /*  //Skapa fil
-            string fileName = "WeatherForecast.json";
-
-            //Skapa en filström
-            using FileStream createStream = File.Create(fileName);
-
-            // Serialisera datan asynkront
-            await JsonSerializer.SerializeAsync(createStream,
-            weatherForecast);
-
-            // Skriv datan asynkront
-            await createStream.DisposeAsync();
-            Console.WriteLine(File.ReadAllText(fileName));
-        */
-
-        /*
-         * using FileStream openStream = File.OpenRead(fileName);
-            List<WeatherForecast>? getWeatherForecast =
-                await JsonSerializer.DeserializeAsync<List<WeatherForecast>>(openStream);
-
-         * */
-        private List<DateTimeAndGuestStruct> ImportBookings(string fileText) //Den här lägger in bokninga på alla bord. Gör om den till string.
+        public void AddBooking(DateTime Chosentime, string GuestName, int numberOfGuests, int tableID) //(DateTime bookedTime, Guest bookingGuest (string name, int numbersOfGuests)) 
         {
-            Regex booking = new Regex(@"Booking=(\w+),(\d),(\d{2}-\d{2}-\d{4} \d{2}:\d{2}).");
-
-            List<DateTimeAndGuestStruct> DateAndTime = new List<DateTimeAndGuestStruct>() { };
-
-            var result = booking.Matches(fileText).ToList();
-
-            foreach (Match match in result)
+            if (BookableObjects[tableID].Booking.Any(dateAndTime => dateAndTime.BookedTime.Equals(Chosentime)))
             {
-                DateTime tempDateD;
-                int tempPersons;
-                string name = match.Groups[1].Value;
-                bool successfullParse = DateTime.TryParse(match.Groups[3].Value, out tempDateD);
-                successfullParse = Int32.TryParse(match.Groups[2].Value, out tempPersons);
-
-                if (successfullParse)
-                {
-                    DateAndTime.Add(new DateTimeAndGuestStruct(tempDateD, new Guest(name, tempPersons)));
-                }
-
-
+                MessageBox.Show("The time is not available", "Cannot Book");
             }
-            return DateAndTime;
-        }
-
-        public void WriteBookingObjectFile() //Gör asynk här också så att det kan ladda från en plats istället.
-        {
-            string filepath = "Tables.txt";
-            List<string> SaveToFile = new List<string>();
-            foreach (IBookingObject table in BookableObjects)
+            else
             {
-                if (table.Booking == null)
-                {
-                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.");
-                }
-                else
-                {
-                    string bookings = table.Booking.Aggregate("", (current, s) => current + ($"Booking={s.BookingGuest.Name},{s.BookingGuest.NumberOfGuests},{s.BookedTime.ToString("MM/dd/yyyy H:mm")}."));
-                    SaveToFile.Add($"TableNumber={table.NameID}.NumberOfSeats={table.MaxNumberOfGuests}.WheelChairAccessable={table.WheelChairAccessable}.{bookings}");
-                }
-
-
+                BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(GuestName, numberOfGuests)));
+                SaveToFile();
+                MessageBox.Show("Added Booking"); //Egentligen här också. Async förstör
+                //FillSeperatedTables();
             }
-            File.WriteAllLines(filepath, SaveToFile);
 
-        }
-        public void AddBooking(DateTime Chosentime, string GuestName, int numberOfGuests, int tableID) //(DateTime bookedTime, Guest bookingGuest (string name, int numbersOfGuests))
-        {
-            BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct (Chosentime,new Guest(GuestName, numberOfGuests)));
-            SaveToFile();
-            MessageBox.Show("Added Booking");
-            WriteBookingObjectFile();
+
         }
         public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int tableID) //Om man väljer att lägga in en kommentar. Här är det ju inga problem att lägga till kommentar efter json serialisering.
         {
-            MessageBox.Show("Added Booking, with comment");
+            if (BookableObjects[tableID].Booking.Any(dateAndTime => dateAndTime.Equals(Chosentime)))
+            {
+                MessageBox.Show("The time is not available", "Cannot Book");
+            }
+            else
+            {
+                BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(guestName, numberOfGuests, comment)));
+                SaveToFile();
+                MessageBox.Show("Added Booking, with comment"); //Egentligen här också. Async förstör
+                //FillSeperatedTables();
+            }
+
         }
-        public void RemoveBooking(int IndexOfTable, int IndexOfBooking)
+        public async void RemoveBooking(int IndexOfTable, int IndexOfBooking)
         {
+            
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
+            await SaveToFile();
+            UpdateLists(); //Du måste fixa UpdateLists så att den inte disconnectar TableChoise.
+        }
+        public async void AddTable(string name) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
+        {
+            BookableObjects.Add(new Table(name, 4, false));
+            await SaveToFile();
+            MessageBox.Show($"{name} added", "Table Added");
+            ListTableID.Add(name);
+            //FillSeperatedTables();
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lab3.BookingSystem
 {
-    public class DateTimeAndGuestStruct //Is the information that is going to be saved to database/textfile with information of the guest and the booked datetime.
+    public class DateTimeAndGuestStruct //Se om du smärtfritt kan byta om den till DateTimeAndGuest - Eller om du smärtfritt kan göra om den till struct igen.
     {
         public DateTime BookedTime { get; set; }
         public Guest BookingGuest { get; set; }

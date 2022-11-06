@@ -17,25 +17,22 @@ namespace Lab3.Tables
         public List<DateTimeAndGuestStruct> Booking { get; set; }
 
 
-        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, List<DateTimeAndGuestStruct> booking)
-        {
-            NameID = tableNumber;
-            MaxNumberOfGuests = numberOfSeats;
-            WheelChairAccessable = wheelChairAccessable;
-            Booking = booking;
-        }
+        //public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, List<DateTimeAndGuestStruct> booking)
+        //{
+        //    NameID = tableNumber;
+        //    MaxNumberOfGuests = numberOfSeats;
+        //    WheelChairAccessable = wheelChairAccessable;
+        //    Booking = booking;
+        //}
         public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable)
         {
             NameID = tableNumber;
             MaxNumberOfGuests = numberOfSeats;
             WheelChairAccessable = wheelChairAccessable;
+            Booking = new List<DateTimeAndGuestStruct>();
         }
         public Table()
         { }
-        public void BookATime(Guest BookingGuest, DateTime BookedTime)
-        {
-            Booking.Add(new DateTimeAndGuestStruct(BookedTime, BookingGuest));
-        }
     }
 
 }

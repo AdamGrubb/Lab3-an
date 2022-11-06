@@ -1,7 +1,0 @@
-TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.Booking=Sara,4,12-25-1986 10:35.Booking=Adan,4,12-25-1988 10:40.Booking=Hanna,4,12-25-2045 10:40.Booking=My,4,12-25-2026 10:40.Booking=Adam,4,11-11-2022 17:00.
-TableNumber=7.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.Booking=UmpaLumpa,4,11-11-2022 17:00.
-TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
-TableNumber=4.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.Booking=Bobbolito,4,11-18-2022 18:30.
-TableNumber=2.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
-TableNumber=8.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
-TableNumber=9.NumberOfSeats=6.WheelChairAccessable=False.Booking=Adam,4,10-25-2022 10:35.
