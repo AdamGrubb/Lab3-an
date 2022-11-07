@@ -32,20 +32,16 @@ namespace Lab3
     /// </summary>
     public partial class MainWindow : Window
     {
-        Restaurants SnuskigaFisken;
+        Restaurants SnuskigaFisken = new Restaurants();
         private int _numberOfPerson = 1;
-        private bool _listBoxView;
-        
         List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan ( 16, 00, 00 ) },{ new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) },{ new TimeSpan(18, 00, 00) },{ new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
+        List<string> tables=new List<string> ();
         public MainWindow()
         {
-            SnuskigaFisken = new Restaurants();
             InitializeComponent();
-            DataContext = SnuskigaFisken;
-            TimePicker.ItemsSource = Availabletimes; //Denna kanske borde läggas mot att uppdatera alla.
+            TimePicker.ItemsSource = Availabletimes; //Denna kanske borde läggas mot att uppdatera alla, det måste den om man ska ändra på tidsspannet.
             NumberOfPersons.Text = _numberOfPerson.ToString(); //Behöver denna vara ToString?
-            
-            //Selectchange på Calender, Tid Eller Guest ska uppdatera BordsListan till de bord som är lediga under de förutsättningarna.
+            DataContext = SnuskigaFisken;
         }
 
         private void SubtractGuest_Click(object sender, RoutedEventArgs e)
@@ -57,7 +53,6 @@ namespace Lab3
             }
 
         }
-
         private void AddGuest_Click(object sender, RoutedEventArgs e)
         {
             if (_numberOfPerson < 8)
@@ -72,36 +67,28 @@ namespace Lab3
             }
         }
 
-        private void BookingButton_Click(object sender, RoutedEventArgs e) //Gör en röd border på det som behöver fixas och skicka upp en messagebox.
+        private async void BookingButton_Click(object sender, RoutedEventArgs e)
         {
+            BookingButton.IsEnabled = false;
             if (UserInputNullCheck())
             {
                 int guestNumbers = _numberOfPerson;
                 DateTime dateAndTime = ChosenDate.SelectedDate.Value;
-                dateAndTime= dateAndTime.Add((TimeSpan)TimePicker.SelectedValue);
+                dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue);
                 string nameOfGuest = userNameInput.Text;
                 int tableID = ChooseTable.SelectedIndex;
 
                 if (ExtraInfoBox.Text != string.Empty) //Frågan är ifall jag bara ska använda en Construktor och låta Commentaren vara null ifall ingen kommentar finns.
                 {
                     string ExtraInfo = ExtraInfoBox.Text;
-                    SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableID);
+                    await SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableID);
                 }
-                else SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, tableID);
-                
-                UpdateListBoxes();
-                SnuskigaFisken.FillDisplayAllBookings();
-                if (_listBoxView == false)
-                {
-                    DisplayAllBookings();
-                }
-                else if (_listBoxView == true)
-                {
-                    GenerateListBoxes();
-                }
+                else await SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, tableID);
+
+                DisplayAllBookings();
             }
             else MessageBox.Show("Du har inte fyllt i alla fält");
-
+            BookingButton.IsEnabled = true;
 
         }
 
@@ -114,92 +101,25 @@ namespace Lab3
             else return true;
         }
 
-        private void AddTableButton_Click(object sender, RoutedEventArgs e)
+        private async void AddTableButton_Click(object sender, RoutedEventArgs e)
         {
-            SnuskigaFisken.AddTable(tableName.Text);
+            await SnuskigaFisken.AddTable(tableName.Text);
         }
 
-        private void GenerateListBoxes()
-        {
-            int tableIndex = 0; //Ta bort denna?? Förstår inte vart den leder.
-            placeForAllBookings.Children.Clear();
-            foreach (List<string> tables in SnuskigaFisken.SeperatedTables) //List<List<ObservableCollection<string>>> SeperatedTables
-            {
-                placeForAllBookings.Children.Add(new StackPanel());
-
-                tableIndex++;
-            }
-            int by = 0;
-            foreach (StackPanel listContainers in placeForAllBookings.Children)
-            {
-                //Klämma in en If SnuskigaFisken.SeperatedTables[by] is null just addListbox. Då skulle du kunna generera den när som helst. Skulle istället kunna lägga in en "No tables loaded".
-                listContainers.Children.Add(new Label() { FontSize = 20, HorizontalAlignment=HorizontalAlignment.Center, Width=250, Content = SnuskigaFisken.ListTableID[by], Background = Brushes.DimGray }); //Kommer denna ge index out of bounds?
- 
-                listContainers.Children.Add(new ListBox() { ItemsSource = SnuskigaFisken.SeperatedTables[by], Width = 250, Background = Brushes.LightYellow });
-                by++;
-            }
-
-        }
-        private void UpdateListBoxes() //Stoppa in denna i GenereatListBoxes. Och döp om den så dispalyAllBookings och GenreateListboxes låter likandne.
-        {
-            DateTime? bokadTider = ChosenDate.SelectedDate;
-            if (bokadTider != null)
-            {
-                SnuskigaFisken.FillSeperatedTables((DateTime)bokadTider); //Gör denna privat igen och 
-            }
-        }
         private void DisplayAllBookings()
         {
             placeForAllBookings.Children.Clear();
-            SnuskigaFisken.FillDisplayAllBookings();
             placeForAllBookings.Children.Add(new ListBox() { ItemsSource = SnuskigaFisken.DisplayAllBookings, DisplayMemberPath = "Key", SelectedValuePath="Value" });
+        
         }
-        private void deleteBooking_Click(object sender, RoutedEventArgs e)
-        { //Varför är det dubbla DisplayAllBookins och Generate ListBoxes??
-
-            if (_listBoxView==false)
-            {
-                DeleteBookingFromDisplayAll();
-                DisplayAllBookings();
-            }
-            else if (_listBoxView == true) 
-            {
-                DeleteFromListBoxes();
-                GenerateListBoxes();
-            }
-
-            /*
-             *Hela den här uppdateringsgrejen måste göras om som en metod. Blir för mycket kod igen. 
-             * 
-             */
-            UpdateListBoxes();
-            SnuskigaFisken.FillDisplayAllBookings();
-            if (_listBoxView == false)
-            {
-                DisplayAllBookings();
-            }
-            else if (_listBoxView == true)
-            {
-                GenerateListBoxes();
-            }
-        }
-        private void DeleteFromListBoxes()
+        private async void deleteBooking_Click(object sender, RoutedEventArgs e)
         {
-            int indexOfList = 0;
-            foreach (StackPanel listContainer in placeForAllBookings.Children)
-            {
-                foreach (ListBox tabelBookings in listContainer.Children.OfType<ListBox>())
-                {
-                    if (tabelBookings.SelectedValue != null)
-                    {
-                        SnuskigaFisken.RemoveBooking(indexOfList, tabelBookings.SelectedIndex);
-                    }
-                    tabelBookings.UnselectAll();
-                    indexOfList++;
-                }
-            }
+            deleteBooking.IsEnabled = false;
+            await DeleteBookingFromDisplayAll();
+            deleteBooking.IsEnabled = true;
+            DisplayAllBookings();
         }
-        private void DeleteBookingFromDisplayAll()
+        private async Task DeleteBookingFromDisplayAll()
         {
             int[] tableIndex = new int[] {};
             foreach (ListBox displayBookings in placeForAllBookings.Children)
@@ -208,36 +128,42 @@ namespace Lab3
             }
             if (tableIndex != null)
             {
-                SnuskigaFisken.RemoveBooking(tableIndex[0], tableIndex[1]); //Här får jag ett exeption i och med att ListBox-är inställd på -1 som default. Lösningen vore att göra ListBox.Select = null. 
+                await SnuskigaFisken.RemoveBooking(tableIndex[0], tableIndex[1]); //Här får jag ett exeption i och med att ListBox-är inställd på -1 som default. Lösningen vore att göra ListBox.Select = null. 
             }
-        }
-        private void ChangeView_Click(object sender, RoutedEventArgs e)
-        {
-            if (ChosenDate.SelectedDate != null)
-            {
-                UpdateListBoxes();
-                GenerateListBoxes();
-                _listBoxView = true;
-            }
-                
         }
         private void ShowAllBookings_Click(object sender, RoutedEventArgs e)
         {
-            DisplayAllBookings();
-            _listBoxView = false;
+            DisplayAllBookings();   
         }
 
-        private void ChosenDate_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        private async void DeleteTable_Click(object sender, RoutedEventArgs e)
         {
-            if (_listBoxView==true)
+            if (ManagerViewTables.SelectedItem != null)
             {
-                UpdateListBoxes();
-                GenerateListBoxes();
+                DeleteTable.IsEnabled=false;
+                await SnuskigaFisken.RemoveTable(ManagerViewTables.SelectedIndex);
+                DeleteTable.IsEnabled = true;
+            }
+
+        }
+        public void format(DateTime date) //Lite allan ballan, foreacha listan och adda till Listboxen, hämta ut Index för table och booking. Om de stämmer överens med datumet som du valt kan du lägga till dem med Bold och lite större. Annars Läggs till med lite mindre.
+        {
+            int indexOfTable = 0;
+
+            Dictionary<string, int[]> DisplayAllBookings = new Dictionary<string, int[]>();
+
+            foreach (IBookingObject tables in SnuskigaFisken.BookableObjects)
+            {
+                int indexOfBooking = 0;
+                var ärDetta = tables.Booking.ToDictionary(DateAndGuest => $"Table: {SnuskigaFisken.BookableObjects[indexOfTable].NameID} Guest:{DateAndGuest.BookingGuest.Name} Bookedtime: {DateAndGuest.BookedTime}", index => new int[] { indexOfTable, indexOfBooking++ });
+                indexOfTable++;
+
+                foreach (KeyValuePair<string, int[]> bookings in ärDetta)
+                {
+                    DisplayAllBookings.Add(bookings.Key, bookings.Value);
+                }
             }
         }
-        private void UpdateElementPaths()
-        {
-            UpdateListBoxes(); //Uppdater
-        }
+
     }
 }

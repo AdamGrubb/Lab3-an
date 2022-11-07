@@ -5,12 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Lab3"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="1000">
+        Title="MainWindow" Height="450" Width="700">
     <TabControl>
-        <TabItem Header="StartPage">
-            <WrapPanel>
-            </WrapPanel>
-        </TabItem>
         <TabItem Header="Booking">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -27,7 +23,7 @@
                 </Grid.RowDefinitions>
                 <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
                     <StackPanel>
-                        <DatePicker Margin="0,0,0,10"  FontSize="15" x:Name="ChosenDate" SelectedDateChanged="ChosenDate_SelectedDateChanged"/>
+                        <DatePicker Margin="0,0,0,10"  FontSize="15" x:Name="ChosenDate"/>
                         <TextBlock Text="Pick time:" FontSize="15"/>
                         <ComboBox x:Name="TimePicker" ItemStringFormat = "{}{0:hh}:{0:mm}"/>
                         <TextBlock Text="Name:" FontSize="15" />
@@ -39,12 +35,12 @@
                             <Button Width="15" Height="20" x:Name="AddGuest"  VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="+" Click="AddGuest_Click"></Button>
                         </StackPanel>
                         <TextBlock Text="Available Tables" FontSize="15"/>
-                        <ComboBox x:Name="ChooseTable" ItemsSource="{Binding ListTableID}"/>
+                        <ComboBox x:Name="ChooseTable" ItemsSource="{Binding Path = ListTableID}"/>
                         <TextBlock Text="Extra info:" FontSize="15"/>
                         <TextBox Height="50" Background="LightYellow" TextWrapping="Wrap" Name="ExtraInfoBox"/>
                         <Button Width="100" Height="30" Content="Delete Booking" x:Name="deleteBooking" Click="deleteBooking_Click"/>
                         <Button Content="Boka" Width="100" Height="30" x:Name="BookingButton" Click="BookingButton_Click"/>
-                        <Button Content="Sort Bookings by date" x:Name="ChangeView" Click="ChangeView_Click" Width="130"/>
+                        <Button Content="Sort Bookings by date" x:Name="ChangeView" Width="130"/>
                         <Button Content="Show all bookings" Name="ShowAllBookings" Click="ShowAllBookings_Click" Width="130"/>
                     </StackPanel>
                 </Grid>
@@ -54,16 +50,14 @@
                     </WrapPanel>
                 </Grid>
             </Grid>
-
-        </TabItem>
-        <TabItem Header="Booked Times">
-
-
         </TabItem>
         <TabItem Header="ManagerControl">
             <StackPanel>
                 <TextBox Text="Input name of table" x:Name="tableName" Width="200" HorizontalAlignment="left"/>
                 <Button Content="Add Table" Name="AddTableButton" Click="AddTableButton_Click" Width="100" HorizontalAlignment="left"/>
+                <ListBox x:Name="ManagerViewTables" ItemsSource="{Binding Path= ListTableID}"/>
+                <Button Content="Remove Table" Width="200" HorizontalAlignment="left" Name="DeleteTable" Click="DeleteTable_Click"/>
+                
                 <TextBlock Text="Add Tables, View Tables, Sett sittingTime = Sätter tidsspannet för vad man kan boka." FontSize="20"/>
                 <TextBlock Text="Sätta bordbegränsning för hur många som får sitta?" FontSize="20"/>
                 <TextBlock Text="Remove table som fördelar ut bokningarna på de andra borden som är lediga." FontSize="20"/>
