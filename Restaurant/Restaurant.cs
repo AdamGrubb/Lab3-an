@@ -1,6 +1,7 @@
 ﻿using Lab3.BookingSystem;
 using Lab3.Guests;
 using Lab3.Tables;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,26 +24,44 @@ using System.Xml.Linq;
 
 namespace Lab3.Restaurant
 {
-    internal class Restaurants : IBookingSystem //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
+    internal class Restaurants : IBookingSystem, INotifyPropertyChanged //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
     {
         public List<IBookingObject> BookableObjects { get; set; }
 
-        public List<string> ListTableID;
+        private List<string> listTableID;
+        public List<string> ListTableID
+        {
+            get
+            {
+                return listTableID;
+            }
+            set
+            {
+                listTableID = value;
+                OnPropertyChanged(nameof(ListTableID));
+            }
+        }
         public Dictionary<string, int[]> DisplayAllBookings = new Dictionary<string, int[]>();
 
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        //public ObservableCollection<string> DisplayAllBookins { get; set; } //Testar lista alla bokningar
-        public Restaurants()
-        {}
+        protected void OnPropertyChanged(string intName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(intName));
+            }
+        }
+        public Restaurants() //Testa ta bort denna också
+        { }
 
-        
-        
+
+
 
         public async Task UpdateLists() //Den här måste felhanteras för att kunna ta emot en tom fil. Temporär lösning.
         {
             await LoadFromFile();
-            //await Task.Delay(4000);
-            if (BookableObjects==null)
+            if (BookableObjects == null)
             {
                 BookableObjects = new List<IBookingObject>();
                 ListTableID = new List<string>();
@@ -55,9 +74,9 @@ namespace Lab3.Restaurant
         }
         private void FillTableID()
         {
-            ListTableID = new List<string> (BookableObjects.Select(tableID => tableID.NameID).ToList());
+            ListTableID = new List<string>(BookableObjects.Select(tableID => tableID.NameID).ToList());
         }
-        private void FillDisplayAllBookings() // fixa null-hantering här
+        public void FillDisplayAllBookings() // fixa null-hantering här
         {
             int indexOfTable = 0;
 
@@ -66,7 +85,7 @@ namespace Lab3.Restaurant
             foreach (IBookingObject tables in BookableObjects)
             {
                 int indexOfBooking = 0;
-                var ärDetta= tables.Booking.ToDictionary(DateAndGuest => $"Table: {BookableObjects[indexOfTable].NameID} Guest:{DateAndGuest.BookingGuest.Name} Bookedtime: {DateAndGuest.BookedTime}", index => new int[] { indexOfTable, indexOfBooking++ });
+                var ärDetta = tables.Booking.ToDictionary(DateAndGuest => $"Table: {BookableObjects[indexOfTable].NameID} Guest:{DateAndGuest.BookingGuest.Name} Bookedtime: {DateAndGuest.BookedTime}", index => new int[] { indexOfTable, indexOfBooking++ });
                 indexOfTable++;
 
                 foreach (KeyValuePair<string, int[]> bookings in ärDetta)
@@ -76,8 +95,9 @@ namespace Lab3.Restaurant
             }
         }
 
-        private async Task SaveToFile() //Kanske sa ha en UppdateList på SaveToFile??
+        private async void SaveToFile() //Kanske sa ha en UppdateList på SaveToFile??
         {
+            //await Task.Delay(5000);
             List<Table> BordsBokningar = new List<Table>();
             foreach (IBookingObject table in BookableObjects) //Här kanske du kan spara ner det som IBookingobjekt från början.
             {
@@ -89,8 +109,9 @@ namespace Lab3.Restaurant
             BordsBokningar);
             await createStream.DisposeAsync();
         }
-        public async Task LoadFromFile()
+        private async Task LoadFromFile()
         {
+            //await Task.Delay(5000);
             string fileName = "BookingData.json";
             FileInfo fileInfo = new FileInfo(fileName);
             if (fileInfo.Exists) //Hur felhanterar man att det försöker ladda in en tom fil??
@@ -98,31 +119,17 @@ namespace Lab3.Restaurant
                 using FileStream openStream = File.OpenRead(fileName);
                 List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(openStream);
                 BookableObjects = new List<IBookingObject>();
-                foreach (Table table in BordsBokningar)
+                if (BordsBokningar != null)
                 {
-                    table.Booking=table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
-                    BookableObjects.Add(table);
+                    foreach (Table table in BordsBokningar)
+                    {
+                        table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
+                        BookableObjects.Add(table);
+                    }
                 }
-                
             }
         }
-        public async Task AddBooking(DateTime Chosentime, string GuestName, int numberOfGuests, int tableID) //(DateTime bookedTime, Guest bookingGuest (string name, int numbersOfGuests)) 
-        {
-            if (BookableObjects[tableID].Booking.Any(dateAndTime => dateAndTime.BookedTime.Equals(Chosentime)))
-            {
-                MessageBox.Show("The time is not available", "Cannot Book");
-            }
-            else
-            {
-                BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(GuestName, numberOfGuests)));
-                await SaveToFile();
-                //await Task.Delay(3000);
-                MessageBox.Show("Added Booking"); //Egentligen här också. Async förstör
-            }
-
-
-        }
-        public async Task AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int tableID) //Om man väljer att lägga in en kommentar. Här är det ju inga problem att lägga till kommentar efter json serialisering.
+        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int tableID) //Om man väljer att lägga in en kommentar. Här är det ju inga problem att lägga till kommentar efter json serialisering.
         {
             if (BookableObjects[tableID].Booking.Any(dateAndTime => dateAndTime.Equals(Chosentime)))
             {
@@ -131,34 +138,46 @@ namespace Lab3.Restaurant
             else
             {
                 BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(guestName, numberOfGuests, comment)));
-                await SaveToFile();
+                foreach (IBookingObject table in BookableObjects)
+                {
+                    table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
+                }
+                SaveToFile();
                 MessageBox.Show("Added Booking, with comment"); //Egentligen här också. Async förstör
-                await UpdateLists();
-                //FillSeperatedTables();
             }
-
         }
-        public async Task RemoveBooking(int IndexOfTable, int IndexOfBooking)
+        public void RemoveBooking(int IndexOfTable, int IndexOfBooking)
         {
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
-            await SaveToFile();
+            SaveToFile();
         }
-        public async Task AddTable(string name) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
+        public void AddTable(string name) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
         {
-            BookableObjects.Add(new Table(name, 4, false));
-            await SaveToFile();
-            MessageBox.Show($"{name} added", "Table Added");
+            if (BookableObjects.Count < 5)
+            {
+                BookableObjects.Add(new Table(name, 4, false));
+                FillTableID();
+                MessageBox.Show($"{name} added", "Table Added");
+                SaveToFile();
+            }
+            else
+            {
+                MessageBox.Show("You have reached max number of tables", "Cannot add more tables");
+            }
+
+
+
 
         }
-        public async Task RemoveTable(int tableIndex) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
+        public void RemoveTable(int tableIndex) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
         {
-            if (BookableObjects[tableIndex].Booking.Count >0)
+            if (BookableObjects[tableIndex].Booking.Count > 0)
             {
                 MessageBoxResult removalOfTable = MessageBox.Show("The table has bookings.\nA removal will loose bookings.\nContinue?", "Warning", MessageBoxButton.YesNo);
                 if (removalOfTable == MessageBoxResult.Yes)
-                { 
+                {
                     BookableObjects.RemoveAt(tableIndex);
-                    
+
                 }
             }
             else
@@ -166,8 +185,66 @@ namespace Lab3.Restaurant
                 BookableObjects.RemoveAt(tableIndex);
             }
             MessageBox.Show($"Successfully removed table", "Completed");
-            await SaveToFile();
+            FillTableID();
+            SaveToFile();
+            MessageBox.Show($"Now Saved", "Completed");
 
+        }
+        public async Task OpenExternalFile() //Kolla upp mer om den här grejen
+        {
+
+            OpenFileDialog LoadingFile = new OpenFileDialog();
+            LoadingFile.DefaultExt = ".json";
+            LoadingFile.Filter = "json files (.json)|*.json";
+
+            var result = LoadingFile.ShowDialog();
+
+            if (result == true)
+            {
+                await Task.Delay(4000);
+                using (FileStream fs = (FileStream)LoadingFile.OpenFile())
+                {
+                    List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(fs);
+                    BookableObjects = new List<IBookingObject>();
+                    if (BordsBokningar != null)
+                    {
+                        foreach (Table table in BordsBokningar)
+                        {
+                            table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
+                            BookableObjects.Add(table);
+                        }
+
+
+                    }
+                }
+                FillTableID();
+                FillDisplayAllBookings();
+            }
+
+        }
+        public async void SaveExternalFile() //kolla upp mer om den här grejen
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+
+            saveDialog.Filter = "json Files|*.json";
+            saveDialog.FilterIndex = 2;
+            saveDialog.RestoreDirectory = true;
+
+            var result = saveDialog.ShowDialog();
+
+            if (result == true)
+            {
+                    List<Table> BordsBokningar = new List<Table>();
+                    foreach (IBookingObject table in BookableObjects) //Här kanske du kan spara ner det som IBookingobjekt från början.
+                    {
+                        BordsBokningar.Add((Table)table);
+                    }
+                    using FileStream createStream = File.Create(saveDialog.FileName);
+                    await JsonSerializer.SerializeAsync(createStream,
+                    BordsBokningar);
+                    await createStream.DisposeAsync();
+             
+            }
         }
     }
 }

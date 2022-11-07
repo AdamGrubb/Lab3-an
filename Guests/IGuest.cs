@@ -9,7 +9,7 @@ namespace Lab3.Guests
     internal interface IGuest
     {
         string Name { get; }
-        int NumberOfGuests { get; }
+        int NumbersOfGuests { get; }
         public string? Comments { get; set; }
     }
 }

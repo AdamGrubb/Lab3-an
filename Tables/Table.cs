@@ -16,14 +16,6 @@ namespace Lab3.Tables
         public bool LocatedOutside { get; set; } //Här har vi ju ett nytt fält. Ska det vara kvar??
         public List<DateTimeAndGuestStruct> Booking { get; set; }
 
-
-        //public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable, List<DateTimeAndGuestStruct> booking)
-        //{
-        //    NameID = tableNumber;
-        //    MaxNumberOfGuests = numberOfSeats;
-        //    WheelChairAccessable = wheelChairAccessable;
-        //    Booking = booking;
-        //}
         public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable)
         {
             NameID = tableNumber;
@@ -31,7 +23,7 @@ namespace Lab3.Tables
             WheelChairAccessable = wheelChairAccessable;
             Booking = new List<DateTimeAndGuestStruct>();
         }
-        public Table()
+        public Table() //Testa ta bort eller vad?
         { }
     }
 

@@ -16,7 +16,6 @@ namespace Lab3.BookingSystem
             BookedTime = bookedTime;
             BookingGuest = bookingGuest;
         }
-        public DateTimeAndGuestStruct()
-        { }
+
     }
 }
