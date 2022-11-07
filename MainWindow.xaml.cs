@@ -38,13 +38,13 @@ namespace Lab3
     {
         Restaurants SnuskigaFisken = new Restaurants();
         private int _numberOfPerson = 1;
-        List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan(16, 00, 00) }, { new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) }, { new TimeSpan(18, 00, 00) }, { new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
-        List<string> tables = new List<string>();
+        private List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan(16, 00, 00) }, { new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) }, { new TimeSpan(18, 00, 00) }, { new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
+        private List<string> tables = new List<string>();
         public MainWindow()
         {
             InitializeComponent();
-            TimePicker.ItemsSource = Availabletimes; //Denna kanske borde läggas mot att uppdatera alla, det måste den om man ska ändra på tidsspannet.
-            NumberOfPersons.Text = _numberOfPerson.ToString(); //Behöver denna vara ToString?
+            TimePicker.ItemsSource = Availabletimes;
+            NumberOfPersons.Text = _numberOfPerson.ToString();
             DataContext = SnuskigaFisken;
             Update();
         }
@@ -72,27 +72,18 @@ namespace Lab3
             if (UserInputNullCheck())
             {
                 int guestNumbers = _numberOfPerson;
-                DateTime dateAndTime = ChosenDate.SelectedDate.Value;
+                DateTime dateAndTime = ChosenDate.SelectedDate.Value; //Eventuellt fixa en nullcheck här?
                 dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue);
                 string nameOfGuest = userNameInput.Text;
-                int tableID = ChooseTable.SelectedIndex;
+                int tableIndex = ChooseTable.SelectedIndex;
                 string ExtraInfo = ExtraInfoBox.Text;
-                SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableID);
+                SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex);
                 ResetUserInput();
             }
             else MessageBox.Show("Du har inte fyllt i alla fält");
             UpdateBookingsList();
 
         }
-        private void ResetUserInput()
-        {
-            userNameInput.Text = "";
-            NumberOfPersons.Text = "1";
-            ChooseTable.SelectedIndex = -1;
-            TimePicker.SelectedIndex = -1;
-            ChosenDate.SelectedDate = null;
-        }
-
         private bool UserInputNullCheck()
         {
             if (ChooseTable.SelectedValue == null || userNameInput.Text == null || ChosenDate.SelectedDate == null || TimePicker.SelectedValue == null)
@@ -100,6 +91,15 @@ namespace Lab3
                 return false;
             }
             else return true;
+        }
+        private void ResetUserInput()
+        {
+            userNameInput.Text = "";
+            _numberOfPerson = 1;
+            NumberOfPersons.Text = _numberOfPerson.ToString();
+            ChooseTable.SelectedIndex = -1;
+            TimePicker.SelectedIndex = -1;
+            ChosenDate.SelectedDate = null;
         }
 
         private void AddTableButton_Click(object sender, RoutedEventArgs e)
@@ -114,7 +114,7 @@ namespace Lab3
         }
         private void DeleteBookingFromDisplayAll()
         {
-            int[] tableIndex = new int[] { };
+            int[] tableIndex = new int[] {};
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableIndex = (int[])PlaceForBookings.SelectedValue;
@@ -155,7 +155,7 @@ namespace Lab3
             PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
             PlaceForBookings.DisplayMemberPath = "Key";
             PlaceForBookings.SelectedValuePath = "Value";
-            
+
         }
 
         private void ExportdBookings_Click(object sender, RoutedEventArgs e)

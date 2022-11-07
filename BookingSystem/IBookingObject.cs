@@ -10,7 +10,6 @@ namespace Lab3.BookingSystem
     {
         string NameID { get; set; }
         int MaxNumberOfGuests { get; set; }
-        bool WheelChairAccessable { get; set; }
-        public List<DateTimeAndGuestStruct> Booking { get; set; } //Struct 
+        public List<DateTimeAndGuestStruct> Booking { get; set; }
     }
 }

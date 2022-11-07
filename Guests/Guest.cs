@@ -10,18 +10,13 @@ namespace Lab3.Guests
     {
         public string Name { get; set; }
         public int NumbersOfGuests { get; set; }
-        public string? Comments { get; set; } //Om kommentaren är null så skapas en vanligt Guest. Om det finns en kommentar kan ju den presenteras i listan med en rödmarkerad plutt.
+        public string? Comments { get; set; } //Comment kan dyka upp som ett tooltipp eller liknande.
         public Guest (string name, int numbersOfGuests, string comments)
         {
             Name = name;
             NumbersOfGuests = numbersOfGuests;
             Comments = comments;
-
         }
-        //public Guest() //Testa att ta bort denna?
-        //{
-
-        //}
     }
 
 }

@@ -12,19 +12,14 @@ namespace Lab3.Tables
     {
         public string NameID { get; set; }
         public int MaxNumberOfGuests { get; set; }
-        public bool WheelChairAccessable { get; set; }
-        public bool LocatedOutside { get; set; } //Här har vi ju ett nytt fält. Ska det vara kvar??
         public List<DateTimeAndGuestStruct> Booking { get; set; }
 
-        public Table(string tableNumber, int numberOfSeats, bool wheelChairAccessable)
+        public Table(string nameID, int maxNumberOfGuests, List<DateTimeAndGuestStruct> booking)
         {
-            NameID = tableNumber;
-            MaxNumberOfGuests = numberOfSeats;
-            WheelChairAccessable = wheelChairAccessable;
-            Booking = new List<DateTimeAndGuestStruct>();
+            NameID = nameID;
+            MaxNumberOfGuests = maxNumberOfGuests;
+            Booking = booking;
         }
-        public Table() //Testa ta bort eller vad?
-        { }
     }
 
 }

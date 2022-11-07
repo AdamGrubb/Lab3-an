@@ -26,9 +26,9 @@ namespace Lab3.Restaurant
 {
     internal class Restaurants : IBookingSystem, INotifyPropertyChanged //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
     {
-        public List<IBookingObject> BookableObjects { get; set; }
+        public List<IBookingObject> BookableObjects { get; set; } = new List<IBookingObject>();//Declare as nullabel
 
-        private List<string> listTableID;
+        private List<string> listTableID = new List<string>(); //Declare as nullabel?
         public List<string> ListTableID
         {
             get
@@ -52,12 +52,6 @@ namespace Lab3.Restaurant
                 PropertyChanged(this, new PropertyChangedEventArgs(intName));
             }
         }
-        public Restaurants() //Testa ta bort denna också
-        { }
-
-
-
-
         public async Task UpdateLists() //Den här måste felhanteras för att kunna ta emot en tom fil. Temporär lösning.
         {
             await LoadFromFile();
@@ -85,7 +79,7 @@ namespace Lab3.Restaurant
             foreach (IBookingObject tables in BookableObjects)
             {
                 int indexOfBooking = 0;
-                var ärDetta = tables.Booking.ToDictionary(DateAndGuest => $"Table: {BookableObjects[indexOfTable].NameID} Guest:{DateAndGuest.BookingGuest.Name} Bookedtime: {DateAndGuest.BookedTime}", index => new int[] { indexOfTable, indexOfBooking++ });
+                var ärDetta = tables.Booking.ToDictionary(DateAndGuest => $"Table: {BookableObjects[indexOfTable].NameID}\nGuest: {DateAndGuest.BookingGuest.Name}\nBookedtime: {DateAndGuest.BookedTime.ToString("f")}", index => new int[] { indexOfTable, indexOfBooking++ });
                 indexOfTable++;
 
                 foreach (KeyValuePair<string, int[]> bookings in ärDetta)
@@ -123,27 +117,26 @@ namespace Lab3.Restaurant
                 {
                     foreach (Table table in BordsBokningar)
                     {
-                        table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
                         BookableObjects.Add(table);
                     }
                 }
             }
         }
-        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int tableID) //Om man väljer att lägga in en kommentar. Här är det ju inga problem att lägga till kommentar efter json serialisering.
+        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int IndexOfTable)
         {
-            if (BookableObjects[tableID].Booking.Any(dateAndTime => dateAndTime.Equals(Chosentime)))
+            if (BookableObjects[IndexOfTable].Booking.Select(date=> date.BookedTime).Any(dateAndTime => dateAndTime.Equals(Chosentime)))
             {
                 MessageBox.Show("The time is not available", "Cannot Book");
             }
             else
             {
-                BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(guestName, numberOfGuests, comment)));
+                BookableObjects[IndexOfTable].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(guestName, numberOfGuests, comment)));
                 foreach (IBookingObject table in BookableObjects)
                 {
                     table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects.
                 }
                 SaveToFile();
-                MessageBox.Show("Added Booking, with comment"); //Egentligen här också. Async förstör
+                MessageBox.Show("Added Booking");
             }
         }
         public void RemoveBooking(int IndexOfTable, int IndexOfBooking)
@@ -151,11 +144,11 @@ namespace Lab3.Restaurant
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
             SaveToFile();
         }
-        public void AddTable(string name) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
+        public void AddTable(string name)
         {
             if (BookableObjects.Count < 5)
             {
-                BookableObjects.Add(new Table(name, 4, false));
+                BookableObjects.Add(new Table(name, 4, new List<DateTimeAndGuestStruct>()));
                 FillTableID();
                 MessageBox.Show($"{name} added", "Table Added");
                 SaveToFile();
@@ -187,7 +180,6 @@ namespace Lab3.Restaurant
             MessageBox.Show($"Successfully removed table", "Completed");
             FillTableID();
             SaveToFile();
-            MessageBox.Show($"Now Saved", "Completed");
 
         }
         public async Task OpenExternalFile() //Kolla upp mer om den här grejen
