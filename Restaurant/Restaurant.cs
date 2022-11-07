@@ -4,6 +4,7 @@ using Lab3.Tables;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -22,43 +23,25 @@ using System.Xml.Linq;
 
 namespace Lab3.Restaurant
 {
-    internal class Restaurants : IBookingSystem, INotifyPropertyChanged //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
+    internal class Restaurants : IBookingSystem //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
     {
         public List<IBookingObject> BookableObjects { get; set; }
 
-        private List<string> listTableID;
-        public List<string> ListTableID 
-        { 
-            get
-            {
-                return listTableID;
-            }
-            
-            set
-            {
-                listTableID = value;
-                OnPropertyChanged(nameof(ListTableID));
-            }
-        }
-        public Dictionary<string, int[]> DisplayAllBookings { get; set; }
-        protected void OnPropertyChanged(string intName)
-        {
+        public List<string> ListTableID;
+        public Dictionary<string, int[]> DisplayAllBookings = new Dictionary<string, int[]>();
 
-            PropertyChanged(this, new PropertyChangedEventArgs(intName));
 
-        }
         //public ObservableCollection<string> DisplayAllBookins { get; set; } //Testar lista alla bokningar
         public Restaurants()
-        {
-            UpdateLists();
-        }
+        {}
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        
+        
 
         public async Task UpdateLists() //Den här måste felhanteras för att kunna ta emot en tom fil. Temporär lösning.
         {
             await LoadFromFile();
-            await Task.Delay(4000);
+            //await Task.Delay(4000);
             if (BookableObjects==null)
             {
                 BookableObjects = new List<IBookingObject>();
@@ -133,10 +116,8 @@ namespace Lab3.Restaurant
             {
                 BookableObjects[tableID].Booking.Add(new DateTimeAndGuestStruct(Chosentime, new Guest(GuestName, numberOfGuests)));
                 await SaveToFile();
-                await Task.Delay(3000);
+                //await Task.Delay(3000);
                 MessageBox.Show("Added Booking"); //Egentligen här också. Async förstör
-                await UpdateLists();
-                
             }
 
 
@@ -161,14 +142,12 @@ namespace Lab3.Restaurant
         {
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
             await SaveToFile();
-            await UpdateLists(); //Du måste fixa UpdateLists så att den inte disconnectar TableChoise. Skulle kunna ta bort den här kanske?
         }
         public async Task AddTable(string name) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
         {
             BookableObjects.Add(new Table(name, 4, false));
             await SaveToFile();
             MessageBox.Show($"{name} added", "Table Added");
-            await UpdateLists();
 
         }
         public async Task RemoveTable(int tableIndex) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
@@ -188,8 +167,6 @@ namespace Lab3.Restaurant
             }
             MessageBox.Show($"Successfully removed table", "Completed");
             await SaveToFile();
-
-            await UpdateLists();
 
         }
     }

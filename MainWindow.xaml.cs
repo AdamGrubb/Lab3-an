@@ -41,7 +41,7 @@ namespace Lab3
             InitializeComponent();
             TimePicker.ItemsSource = Availabletimes; //Denna kanske borde läggas mot att uppdatera alla, det måste den om man ska ändra på tidsspannet.
             NumberOfPersons.Text = _numberOfPerson.ToString(); //Behöver denna vara ToString?
-            DataContext = SnuskigaFisken;
+            Update();
         }
 
         private void SubtractGuest_Click(object sender, RoutedEventArgs e)
@@ -84,11 +84,10 @@ namespace Lab3
                     await SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableID);
                 }
                 else await SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, tableID);
-
-                DisplayAllBookings();
             }
             else MessageBox.Show("Du har inte fyllt i alla fält");
             BookingButton.IsEnabled = true;
+            Update();
 
         }
 
@@ -104,36 +103,28 @@ namespace Lab3
         private async void AddTableButton_Click(object sender, RoutedEventArgs e)
         {
             await SnuskigaFisken.AddTable(tableName.Text);
-        }
-
-        private void DisplayAllBookings()
-        {
-            placeForAllBookings.Children.Clear();
-            placeForAllBookings.Children.Add(new ListBox() { ItemsSource = SnuskigaFisken.DisplayAllBookings, DisplayMemberPath = "Key", SelectedValuePath="Value" });
-        
+            Update();
         }
         private async void deleteBooking_Click(object sender, RoutedEventArgs e)
         {
             deleteBooking.IsEnabled = false;
             await DeleteBookingFromDisplayAll();
             deleteBooking.IsEnabled = true;
-            DisplayAllBookings();
+            Update();
         }
         private async Task DeleteBookingFromDisplayAll()
         {
             int[] tableIndex = new int[] {};
-            foreach (ListBox displayBookings in placeForAllBookings.Children)
+            if (PlaceForBookings.SelectedValue != null)
             {
-                    tableIndex = (int[])displayBookings.SelectedValue;
+                await SnuskigaFisken.RemoveBooking(tableIndex[0], tableIndex[1]);
             }
-            if (tableIndex != null)
-            {
-                await SnuskigaFisken.RemoveBooking(tableIndex[0], tableIndex[1]); //Här får jag ett exeption i och med att ListBox-är inställd på -1 som default. Lösningen vore att göra ListBox.Select = null. 
-            }
+            Update();
+
         }
         private void ShowAllBookings_Click(object sender, RoutedEventArgs e)
         {
-            DisplayAllBookings();   
+            Update();
         }
 
         private async void DeleteTable_Click(object sender, RoutedEventArgs e)
@@ -144,6 +135,7 @@ namespace Lab3
                 await SnuskigaFisken.RemoveTable(ManagerViewTables.SelectedIndex);
                 DeleteTable.IsEnabled = true;
             }
+            Update();
 
         }
         public void format(DateTime date) //Lite allan ballan, foreacha listan och adda till Listboxen, hämta ut Index för table och booking. Om de stämmer överens med datumet som du valt kan du lägga till dem med Bold och lite större. Annars Läggs till med lite mindre.
@@ -164,6 +156,15 @@ namespace Lab3
                 }
             }
         }
+        public async void Update()
+        {
+            await SnuskigaFisken.UpdateLists();
+            PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
+            PlaceForBookings.DisplayMemberPath = "Key";
+            PlaceForBookings.SelectedValuePath = "Value";
+            ChooseTable.ItemsSource = SnuskigaFisken.ListTableID;
+        }
+
 
     }
 }

@@ -1,1 +1,1 @@
-[{"NameID":"Table 1","MaxNumberOfGuests":4,"WheelChairAccessable":false,"LocatedOutside":false,"Booking":[]}]
+[{"NameID":"Table 1","MaxNumberOfGuests":4,"WheelChairAccessable":false,"LocatedOutside":false,"Booking":[{"BookedTime":"2022-11-11T17:30:00","BookingGuest":{"Name":"Adam","NumberOfGuests":4,"Comments":null}}]}]
