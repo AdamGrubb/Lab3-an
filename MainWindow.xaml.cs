@@ -45,6 +45,7 @@ namespace Lab3
             InitializeComponent();
             TimePicker.ItemsSource = Availabletimes;
             NumberOfPersons.Text = _numberOfPerson.ToString();
+            ChosenDate.DisplayDateStart = DateTime.Today;
             DataContext = SnuskigaFisken;
             Update();
         }
@@ -161,6 +162,16 @@ namespace Lab3
         private void ExportdBookings_Click(object sender, RoutedEventArgs e)
         {
             SnuskigaFisken.SaveExternalFile();
+        }
+
+        private void PlaceForBookings_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            int[] tableAndBookingIndex = new int[] { };
+            if (PlaceForBookings.SelectedValue != null)
+            {
+                tableAndBookingIndex = (int[])PlaceForBookings.SelectedValue;
+                BookingInfo.Text = $"Table: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
+            }
         }
     }
 }

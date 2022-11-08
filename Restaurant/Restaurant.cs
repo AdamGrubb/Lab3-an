@@ -122,11 +122,12 @@ namespace Lab3.Restaurant
                 }
             }
         }
-        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int IndexOfTable)
+        public void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int IndexOfTable) //om du ska implementera tid för sittning så kan du sätta in 
         {
-            if (BookableObjects[IndexOfTable].Booking.Select(date=> date.BookedTime).Any(dateAndTime => dateAndTime.Equals(Chosentime)))
+            if (BookableObjects[IndexOfTable].Booking.Select(date => date.BookedTime).Any(dateAndTime => dateAndTime==Chosentime|| Chosentime > dateAndTime && Chosentime < dateAndTime + new TimeSpan(1, 59, 0) || Chosentime < dateAndTime && dateAndTime < Chosentime + new TimeSpan(1, 59, 0))) //Ta bort Timespan och lägg till lenght of sitting och lägg alltid till minus en minut. Och kolla av så att den fungerar.
+            //if (BookableObjects[IndexOfTable].Booking.Select(date=> date.BookedTime).Any(dateAndTime => dateAndTime.Equals(Chosentime)))
             {
-                MessageBox.Show("The time is not available", "Cannot Book");
+                MessageBox.Show("The time is not free or within another bookings sitting", "Cannot Book");
             }
             else
             {
@@ -139,6 +140,10 @@ namespace Lab3.Restaurant
                 MessageBox.Show("Added Booking");
             }
         }
+        //private bool IfWithinTimeSpan(DateTime addbooking, DateTime existingBooking) bättre att lägga den som en metod?
+        //{
+        //    if ()
+        //}
         public void RemoveBooking(int IndexOfTable, int IndexOfBooking)
         {
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);

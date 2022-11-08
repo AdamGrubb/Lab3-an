@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Lab3"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="700">
+        Title="MainWindow" Height="450" Width="800">
     <TabControl>
         <TabItem Header="Booking">
             <Grid>
@@ -23,7 +23,7 @@
                 </Grid.RowDefinitions>
                 <Grid Grid.Column="0" Grid.Row="0" Grid.RowSpan="3">
                     <StackPanel>
-                        <DatePicker Margin="0,0,0,10"  FontSize="15" x:Name="ChosenDate"/>
+                        <DatePicker Margin="0,0,0,10"  FontSize="15" x:Name="ChosenDate" />
                         <TextBlock Text="Pick time:" FontSize="15"/>
                         <ComboBox x:Name="TimePicker" ItemStringFormat = "{}{0:hh}:{0:mm}"/>
                         <TextBlock Text="Name:" FontSize="15" />
@@ -43,11 +43,12 @@
                         <Button Content="Show all bookings" Name="ShowAllBookings" Click="ShowAllBookings_Click" Width="130"/>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="3">
+                <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2">
                     <WrapPanel x:Name="placeForAllBookings">
-                        <ListBox x:Name="PlaceForBookings"/>
+                        <ListBox x:Name="PlaceForBookings" SelectionChanged="PlaceForBookings_SelectionChanged"/>
                     </WrapPanel>
                 </Grid>
+                <TextBlock Grid.Column="4" Grid.RowSpan="2" Name="BookingInfo" TextWrapping="Wrap"/>
             </Grid>
         </TabItem>
         <TabItem Header="ManagerControl">
