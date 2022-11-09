@@ -36,7 +36,7 @@ namespace Lab3
     /// </summary>
     public partial class MainWindow : Window
     {
-        Restaurants SnuskigaFisken = new Restaurants();
+        Restaurants Vesuvio = new Restaurants();
         private List<TimeSpan> Availabletimes;
         private List<string> tables = new List<string>();
         public MainWindow()
@@ -45,12 +45,12 @@ namespace Lab3
             Availabletimes = FillTimeSpan();
             TimePicker.ItemsSource = Availabletimes;
             ChosenDate.DisplayDateStart = DateTime.Today;
-            DataContext = SnuskigaFisken;
+            DataContext = Vesuvio;
             NumberOfSeats.Text = "2";
             NumberOfPersons.Text = "1";
             Update();
         }
-        private List<TimeSpan> FillTimeSpan()
+        private List<TimeSpan> FillTimeSpan() //Fyller på combobox med valbara tider.
         {
             List<TimeSpan> fillTimeSpan = new List<TimeSpan>();
             TimeSpan StartTime = new TimeSpan(16, 00, 00);
@@ -98,28 +98,27 @@ namespace Lab3
             }
         }
 
-        private void BookingButton_Click(object sender, RoutedEventArgs e) //Kolla om du behöver snygga till här.
+        private void BookingButton_Click(object sender, RoutedEventArgs e) 
         {
-            if (UserInputNullCheck() && Int32.TryParse(NumberOfPersons.Text, out int guestNumbers))
+            if (UserInputNullCheck() && Int32.TryParse(NumberOfPersons.Text, out int guestNumbers)) //Kolla av via UserInputNullCheck att ingen av fälten som stoppas in i Add.Booking är tomma eller null. Samt gör ytterligare en Int32.TryParse av guestNumbers innan de stoppas in som parameter.
             {
-                //guestNumbers = _intChoice;
-                DateTime dateAndTime = ChosenDate.SelectedDate.Value; //Eventuellt fixa en nullcheck här
-                dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue);
+                DateTime dateAndTime = ChosenDate.SelectedDate.Value;
+                dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue); //Lägger ihop det valda datumet med den valda tiden för bokningen.
                 string nameOfGuest = userNameInput.Text;
                 int tableIndex = ChooseTable.SelectedIndex;
                 string ExtraInfo = ExtraInfoBox.Text;
-                if (SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex))
+                if (Vesuvio.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex)) //AddBooking kollar av om bokningen kan genomföras och skickar true om det funkar. Ifall t ex man dubbelbokar så skickar den false. På det sättet så rensas fälten för inmatning endast om bokningen gick igenom.
                 {
                     ResetUserInput();
                 }
             }
-            else MessageBox.Show("Du har inte fyllt i alla fält");
+            else MessageBox.Show("Empty fields, please try again");
             UpdateBookingsList();
 
         }
         private bool UserInputNullCheck()
         {
-            if (ChooseTable.SelectedValue == null || userNameInput.Text == null || ChosenDate.SelectedDate == null || TimePicker.SelectedValue == null)
+            if (ChooseTable.SelectedValue == null || String.IsNullOrWhiteSpace(userNameInput.Text) || ChosenDate.SelectedDate == null || TimePicker.SelectedValue == null)
             {
                 return false;
             }
@@ -137,12 +136,21 @@ namespace Lab3
 
         private void AddTableButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Int32.TryParse(NumberOfSeats.Text, out int intSeats))
+
+            if (String.IsNullOrWhiteSpace(tableName.Text) == false)
             {
-                SnuskigaFisken.AddTable(tableName.Text, intSeats);
-                NumberOfSeats.Text = "2";
-                tableName.Text = "";
+                if (Int32.TryParse(NumberOfSeats.Text, out int intSeats))
+                {
+                    Vesuvio.AddTable(tableName.Text, intSeats);
+                    NumberOfSeats.Text = "2";
+                    tableName.Text = "";
+                }
             }
+            else
+            {
+                MessageBox.Show("You must set a name for the table");
+            }
+
 
         }
         private void deleteBooking_Click(object sender, RoutedEventArgs e)
@@ -152,13 +160,13 @@ namespace Lab3
             UpdateBookingsList();
 
         }
-        private void DeleteBookingFromDisplayAll()
+        private void DeleteBookingFromDisplayAll() //Jag har valt att ha bokningen i Listboxen som ett dictonary där Key är en string med bokningsinfo och value är en int-array där Index[0] är index för IBookingObject (table) och Index[1] är index för själva bokningen.
         {
             int[] tableIndex = new int[] { };
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableIndex = (int[])PlaceForBookings.SelectedValue;
-                SnuskigaFisken.RemoveBooking(tableIndex[0], tableIndex[1]);
+                Vesuvio.RemoveBooking(tableIndex[0], tableIndex[1]);
             }
 
         }
@@ -171,34 +179,34 @@ namespace Lab3
         {
             if (ManagerViewTables.SelectedItem != null)
             {
-                SnuskigaFisken.RemoveTable(ManagerViewTables.SelectedIndex);
+                Vesuvio.RemoveTable(ManagerViewTables.SelectedIndex);
                 UpdateBookingsList();
             }
         }
-        public async void Update()
+        public async void Update() //Gör en await här så att det laddar in all information innan den börja göra nya listor av bokningsdata.
         {
-            await SnuskigaFisken.UpdateLists();
+            await Vesuvio.UpdateLists();
             UpdateBookingsList();
         }
         private void UpdateBookingsList()
         {
-            SnuskigaFisken.FillDisplayAllBookings();
+            Vesuvio.FillDisplayAllBookings();
             BookingInfo.Text = "";
-            PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
+            PlaceForBookings.ItemsSource = Vesuvio.DisplayAllBookings;
             PlaceForBookings.DisplayMemberPath = "Key";
             PlaceForBookings.SelectedValuePath = "Value";
         }
 
         private async void LoadBookings_Click(object sender, RoutedEventArgs e)
         {
-            await SnuskigaFisken.OpenExternalFile();
-            PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
+            await Vesuvio.OpenExternalFile();
+            PlaceForBookings.ItemsSource = Vesuvio.DisplayAllBookings;
             PlaceForBookings.DisplayMemberPath = "Key";
             PlaceForBookings.SelectedValuePath = "Value";
         }
         private void ExportdBookings_Click(object sender, RoutedEventArgs e)
         {
-            SnuskigaFisken.SaveExternalFile();
+            Vesuvio.SaveExternalFile();
         }
         private void PlaceForBookings_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -206,7 +214,7 @@ namespace Lab3
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableAndBookingIndex = (int[])PlaceForBookings.SelectedValue;
-                BookingInfo.Text = $"{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
+                BookingInfo.Text = $"{Vesuvio.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
             }
         }
     }

@@ -25,11 +25,11 @@ using System.Xml.Linq;
 
 namespace Lab3.Restaurant
 {
-    internal class Restaurants : IBookingSystem, INotifyPropertyChanged //Kanske lägga alla Lists här som observable collections? Så att alla Listor, Fixa en export och Load knapp som gör att man kan ladda bokningar och sedan skriver över default-filen.
+    internal class Restaurants : IBookingSystem, INotifyPropertyChanged
     {
-        public List<IBookingObject> BookableObjects { get; set; } = new List<IBookingObject>();//Declare as nullabel
+        public List<IBookingObject> BookableObjects { get; set; } = new List<IBookingObject>();
 
-        private List<string> listTableID = new List<string>(); //Declare as nullabel?
+        private List<string> listTableID = new List<string>();
         public List<string> ListTableID
         {
             get
@@ -53,7 +53,7 @@ namespace Lab3.Restaurant
                 PropertyChanged(this, new PropertyChangedEventArgs(intName));
             }
         }
-        public async Task UpdateLists() //Den här måste felhanteras för att kunna ta emot en tom fil. Temporär lösning.
+        public async Task UpdateLists()
         {
             await LoadFromFile();
             if (BookableObjects == null)
@@ -64,18 +64,18 @@ namespace Lab3.Restaurant
             else
             {
                 FillTableID();
-                FillDisplayAllBookings();
+                //FillDisplayAllBookings(); Testa ännu mer, Verkar som den här inte behövs
             }
         }
         private void FillTableID()
         {
             ListTableID = new List<string>(BookableObjects.Select(table => $"{table.NameID.PadRight(15)}{table.MaxNumberOfGuests} Seats ").ToList());
         }
-        public void FillDisplayAllBookings() // fixa null-hantering här
+        public void FillDisplayAllBookings()
         {
             int indexOfTable = 0;
             DisplayAllBookings = new Dictionary<string, int[]>();
-            SortedList<DateTime, int[]> listTable = new SortedList<DateTime, int[]>();
+            Dictionary<int[], DateTime> ExtractBooking = new Dictionary<int[], DateTime>();
 
             foreach (IBookingObject tables in BookableObjects)
             {
@@ -83,55 +83,88 @@ namespace Lab3.Restaurant
                 int indexOfBooking = 0;
                 foreach (DateTimeAndGuestStruct date in tables.Booking)
                 {
-                    listTable.Add(date.BookedTime, new int[] { indexOfTable, indexOfBooking++ }); 
+                    ExtractBooking.Add(new int[] { indexOfTable, indexOfBooking++}, date.BookedTime);
                 }
                 indexOfTable++;
             }
-            foreach (KeyValuePair<DateTime, int[]> bookings in listTable)
+            foreach (KeyValuePair<int[], DateTime> bookings in ExtractBooking.OrderBy(date=> date.Value))//Här gör jag om en till en dictonary när den är sorterad, För att göra det hela lite tydligare så tilldelar jag variablar för varje del i strängen.
             {
-                string TableID = BookableObjects[bookings.Value[0]].NameID;
-                string GuestName = BookableObjects[bookings.Value[0]].Booking[bookings.Value[1]].BookingGuest.Name;
-                string StartSitting = bookings.Key.ToString("g");
-                string EndSitting = bookings.Key.Add(new TimeSpan(02, 00, 00)).ToString("H:mm");
-                //DisplayAllBookings.Add($"{BookableObjects[bookings.Value[0]].NameID} Guest: {BookableObjects[bookings.Value[0]].Booking[bookings.Value[1]].BookingGuest.Name} {bookings.Key.ToString("g")}-{bookings.Key.Add(new TimeSpan(02,00,00)).ToString("H:mm")}", bookings.Value);
-                
-                DisplayAllBookings.Add($"{TableID} Guest: {GuestName} {StartSitting}-{EndSitting}", bookings.Value);
+                string tableID = BookableObjects[bookings.Key[0]].NameID;
+                string guestName = BookableObjects[bookings.Key[0]].Booking[bookings.Key[1]].BookingGuest.Name;
+                string startSitting = bookings.Value.ToString("g");
+                string endSitting = bookings.Value.Add(new TimeSpan(02, 00, 00)).ToString("H:mm");
+                                
+                DisplayAllBookings.Add($"{tableID} Guest: {guestName} {startSitting}-{endSitting}", bookings.Key);
             }
         }
         public async void SaveToFile() //Kanske sa ha en UppdateList på SaveToFile??
         {
-            //await Task.Delay(5000);
-            List<Table> BordsBokningar = new List<Table>();
-            foreach (IBookingObject table in BookableObjects)
+            try
             {
-                BordsBokningar.Add((Table)table);
+                List<Table> BordsBokningar = new List<Table>();
+                foreach (IBookingObject table in BookableObjects)
+                {
+                    BordsBokningar.Add((Table)table);
+                }
+                string fileName = "BookingData.json";
+                using FileStream createStream = File.Create(fileName);
+                await JsonSerializer.SerializeAsync(createStream,
+                BordsBokningar);
+                await createStream.DisposeAsync();
             }
-            string fileName = "BookingData.json";
-            using FileStream createStream = File.Create(fileName);
-            await JsonSerializer.SerializeAsync(createStream,
-            BordsBokningar);
-            await createStream.DisposeAsync();
+            catch (UnauthorizedAccessException)
+            {
+                MessageBox.Show("You do not have permission to overwrite BookingData.json file.", "Unauthorized Access");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Save to file failed, {e}", "Failed to save");
+            }
+
         }
         public async Task LoadFromFile()
         {
-            //await Task.Delay(5000);
             string fileName = "BookingData.json";
             FileInfo fileInfo = new FileInfo(fileName);
-            if (fileInfo.Exists) //Hur felhanterar man att det försöker ladda in en tom fil??
+            if (fileInfo.Exists)
             {
-                using FileStream openStream = File.OpenRead(fileName);
-                List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(openStream);
-                BookableObjects = new List<IBookingObject>();
-                if (BordsBokningar != null)
+                try
                 {
-                    foreach (Table table in BordsBokningar)
+                    using FileStream openStream = File.OpenRead(fileName);
+                    List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(openStream);
+                    BookableObjects = new List<IBookingObject>();
+                    if (BordsBokningar != null)
                     {
-                        BookableObjects.Add(table);
+                        foreach (Table table in BordsBokningar)
+                        {
+                            BookableObjects.Add(table);
+                        }
                     }
                 }
+                catch (UnauthorizedAccessException)
+                {
+                    MessageBox.Show("You do not have permission to read BookingData.json file.\nCould not load data", "Unauthorized Access");
+                }
+                catch (ArgumentNullException)
+                {
+                    MessageBox.Show("BookingData.json is empty", "Failed to load");
+                }
+                catch (JsonException)
+                {
+                    MessageBox.Show($"The BookingData is corrupt\nCould not load data", "Failed to load");
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show($"Load from file failed, {e}", "Failed to load");
+                }
+
+            }
+            else
+            {
+                MessageBox.Show("Bookingdata not found", "Missing bookingdata");
             }
         }
-        public bool AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int IndexOfTable) //om du ska implementera tid för sittning så kan du sätta in 
+        public bool AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int IndexOfTable) //Börjar med att jämföra datetime på den nya bokningen med befintliga bokningars datetime. Sen ifall antalet gäster överskrider målobjektets. Om båda är false så går bokningen igenom.
         {
             bool succsessfullBooking = false;
             if (BookableObjects[IndexOfTable].Booking.Select(date => date.BookedTime).Any(dateAndTime => dateAndTime==Chosentime|| Chosentime > dateAndTime && Chosentime < dateAndTime + new TimeSpan(1, 59, 0) || Chosentime < dateAndTime && dateAndTime < Chosentime + new TimeSpan(1, 59, 0))) //Ta bort Timespan och lägg till lenght of sitting och lägg alltid till minus en minut. Och kolla av så att den fungerar.
@@ -156,9 +189,13 @@ namespace Lab3.Restaurant
             BookableObjects[IndexOfTable].Booking.RemoveAt(IndexOfBooking);
             SaveToFile();
         }
-        public void AddTable(string name, int seats)
+        public void AddTable(string name, int seats) //Här har jag i enlighet med uppgiftens krav satt en gräns på att det inte kan vara mer än 5 bord som kan bli bokade samtidigt.
         {
-            if (BookableObjects.Count < 5)
+            if (BookableObjects.Any(table => table.NameID.Equals(name)))
+            {
+                MessageBox.Show("A table with that name already exists", "Fail to add");
+            }
+            else if (BookableObjects.Count < 5)
             {
                 BookableObjects.Add(new Table(name, seats, new List<DateTimeAndGuestStruct>()));
                 FillTableID();
@@ -170,7 +207,7 @@ namespace Lab3.Restaurant
                 MessageBox.Show("You have reached max number of tables", "Cannot add more tables");
             }
         }
-        public void RemoveTable(int tableIndex) //Här kan du lägga in så att man kan ställa in hur bordet ska vara. Den verkar inte uppdatera Table. Varför inte?
+        public void RemoveTable(int tableIndex) //Kollar först av ifall det finns bokningar knutna till objektet Table och ger en varning att bokningar som tillhör table kommer försvinna.
         {
             if (BookableObjects[tableIndex].Booking.Count > 0)
             {
@@ -192,7 +229,7 @@ namespace Lab3.Restaurant
             SaveToFile();
 
         }
-        public async Task OpenExternalFile() //Kolla upp mer om den här grejen
+        public async Task OpenExternalFile()
         {
             MessageBoxResult removalOfTable = MessageBox.Show("Will overwrite booking data\nContinue?", "Warning", MessageBoxButton.YesNo);
             if (removalOfTable == MessageBoxResult.Yes)
@@ -205,21 +242,36 @@ namespace Lab3.Restaurant
 
                 if (result == true)
                 {
-                    await Task.Delay(4000);
-                    using (FileStream fs = (FileStream)LoadingFile.OpenFile())
+                    try 
                     {
-                        List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(fs);
-                        BookableObjects = new List<IBookingObject>();
-                        if (BordsBokningar != null)
+                        using (FileStream fs = (FileStream)LoadingFile.OpenFile())
                         {
-                            foreach (Table table in BordsBokningar)
+                            List<Table>? BordsBokningar = await JsonSerializer.DeserializeAsync<List<Table>>(fs);
+                            BookableObjects = new List<IBookingObject>();
+                            if (BordsBokningar != null)
                             {
-                                table.Booking = table.Booking.OrderBy(date => date.BookedTime).ToList(); //Är tänkt att sortera listan innan den läggs över i IBookableObjects. Ta bort denna eller?
-                                BookableObjects.Add(table);
+                                foreach (Table table in BordsBokningar)
+                                {
+                                    BookableObjects.Add(table);
+                                }
                             }
-
-
                         }
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        MessageBox.Show("You do not have permission to read file.\nCould not load data", "Unauthorized Access");
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        MessageBox.Show("Booking data file is empty", "Failed to load");
+                    }
+                    catch (JsonException)
+                    {
+                        MessageBox.Show($"The BookingData is corrupt\nCould not load data", "Failed to load");
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show($"Load from file failed, {e}", "Failed to load");
                     }
                     SaveToFile();
                     FillTableID();
@@ -239,15 +291,26 @@ namespace Lab3.Restaurant
 
             if (result == true)
             {
-                    List<Table> BordsBokningar = new List<Table>();
-                    foreach (IBookingObject table in BookableObjects) //Här kanske du kan spara ner det som IBookingobjekt från början.
-                    {
-                        BordsBokningar.Add((Table)table);
-                    }
+                List<Table> BordsBokningar = new List<Table>();
+                foreach (IBookingObject table in BookableObjects)
+                {
+                    BordsBokningar.Add((Table)table);
+                }
+                try
+                {
                     using FileStream createStream = File.Create(saveDialog.FileName);
                     await JsonSerializer.SerializeAsync(createStream,
                     BordsBokningar);
                     await createStream.DisposeAsync();
+                }
+                catch (PathTooLongException)
+                {
+                    MessageBox.Show("Filename and/or filepath is to long", "Failed to save");
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show($"Save to file failed, {e}", "Failed to save");
+                }
              
             }
         }
