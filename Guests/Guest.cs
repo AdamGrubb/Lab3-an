@@ -10,7 +10,7 @@ namespace Lab3.Guests
     {
         public string Name { get; set; }
         public int NumbersOfGuests { get; set; }
-        public string? Comments { get; set; } //Comment kan dyka upp som ett tooltipp eller liknande.
+        public string? Comments { get; set; }
         public Guest (string name, int numbersOfGuests, string comments)
         {
             Name = name;

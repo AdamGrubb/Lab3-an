@@ -37,49 +37,81 @@ namespace Lab3
     public partial class MainWindow : Window
     {
         Restaurants SnuskigaFisken = new Restaurants();
-        private int _numberOfPerson = 1;
-        private List<TimeSpan> Availabletimes = new List<TimeSpan> { { new TimeSpan(16, 00, 00) }, { new TimeSpan(17, 00, 00) }, { new TimeSpan(17, 30, 00) }, { new TimeSpan(18, 00, 00) }, { new TimeSpan(18, 30, 00) } }; //Helt enkelt ändra till List<string>.
+        private List<TimeSpan> Availabletimes;
         private List<string> tables = new List<string>();
         public MainWindow()
         {
             InitializeComponent();
+            Availabletimes = FillTimeSpan();
             TimePicker.ItemsSource = Availabletimes;
-            NumberOfPersons.Text = _numberOfPerson.ToString();
             ChosenDate.DisplayDateStart = DateTime.Today;
             DataContext = SnuskigaFisken;
+            NumberOfSeats.Text = "2";
+            NumberOfPersons.Text = "1";
             Update();
         }
+        private List<TimeSpan> FillTimeSpan()
+        {
+            List<TimeSpan> fillTimeSpan = new List<TimeSpan>();
+            TimeSpan StartTime = new TimeSpan(16, 00, 00);
+            for (int i = 0; i < 9; i++)
+            {
+                fillTimeSpan.Add(StartTime);
+                StartTime = StartTime.Add(new TimeSpan(00, 30, 00));
+            }
+            return fillTimeSpan;
 
+        }
         private void SubtractGuest_Click(object sender, RoutedEventArgs e)
         {
-            if (_numberOfPerson > 1)
+            if (Int32.TryParse(NumberOfPersons.Text, out int SubtracGuests) && SubtracGuests > 1)
             {
-                _numberOfPerson--;
-                NumberOfPersons.Text = _numberOfPerson.ToString();
+                SubtracGuests--;
+                NumberOfPersons.Text = SubtracGuests.ToString();
             }
-
         }
         private void AddGuest_Click(object sender, RoutedEventArgs e)
         {
-            if (_numberOfPerson < 8)
+            if (Int32.TryParse(NumberOfPersons.Text, out int AddGuests) && AddGuests < 8)
             {
-                _numberOfPerson++;
-                NumberOfPersons.Text = _numberOfPerson.ToString();
+                AddGuests++;
+                NumberOfPersons.Text = AddGuests.ToString();
+            }
+
+        }
+        private void SubtractSeats_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (Int32.TryParse(NumberOfSeats.Text, out int SubtractSeat) && SubtractSeat > 1)
+            {
+                SubtractSeat--;
+                NumberOfSeats.Text = SubtractSeat.ToString();
+            }
+        }
+
+        private void AddSeat_Click(object sender, RoutedEventArgs e)
+        {
+            if (Int32.TryParse(NumberOfSeats.Text, out int AddSeat) && AddSeat < 8)
+            {
+                AddSeat++;
+                NumberOfSeats.Text = AddSeat.ToString();
             }
         }
 
         private void BookingButton_Click(object sender, RoutedEventArgs e) //Kolla om du behöver snygga till här.
         {
-            if (UserInputNullCheck())
+            if (UserInputNullCheck() && Int32.TryParse(NumberOfPersons.Text, out int guestNumbers))
             {
-                int guestNumbers = _numberOfPerson;
-                DateTime dateAndTime = ChosenDate.SelectedDate.Value; //Eventuellt fixa en nullcheck här?
+                //guestNumbers = _intChoice;
+                DateTime dateAndTime = ChosenDate.SelectedDate.Value; //Eventuellt fixa en nullcheck här
                 dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue);
                 string nameOfGuest = userNameInput.Text;
                 int tableIndex = ChooseTable.SelectedIndex;
                 string ExtraInfo = ExtraInfoBox.Text;
-                SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex);
-                ResetUserInput();
+                if (SnuskigaFisken.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex))
+                {
+                    ResetUserInput();
+                }
             }
             else MessageBox.Show("Du har inte fyllt i alla fält");
             UpdateBookingsList();
@@ -96,26 +128,33 @@ namespace Lab3
         private void ResetUserInput()
         {
             userNameInput.Text = "";
-            _numberOfPerson = 1;
-            NumberOfPersons.Text = _numberOfPerson.ToString();
+            NumberOfPersons.Text = "1";
             ChooseTable.SelectedIndex = -1;
             TimePicker.SelectedIndex = -1;
             ChosenDate.SelectedDate = null;
+            ExtraInfoBox.Text = "";
         }
 
         private void AddTableButton_Click(object sender, RoutedEventArgs e)
         {
-            SnuskigaFisken.AddTable(tableName.Text);
+            if (Int32.TryParse(NumberOfSeats.Text, out int intSeats))
+            {
+                SnuskigaFisken.AddTable(tableName.Text, intSeats);
+                NumberOfSeats.Text = "2";
+                tableName.Text = "";
+            }
+
         }
         private void deleteBooking_Click(object sender, RoutedEventArgs e)
         {
 
             DeleteBookingFromDisplayAll();
             UpdateBookingsList();
+
         }
         private void DeleteBookingFromDisplayAll()
         {
-            int[] tableIndex = new int[] {};
+            int[] tableIndex = new int[] { };
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableIndex = (int[])PlaceForBookings.SelectedValue;
@@ -135,7 +174,6 @@ namespace Lab3
                 SnuskigaFisken.RemoveTable(ManagerViewTables.SelectedIndex);
                 UpdateBookingsList();
             }
-
         }
         public async void Update()
         {
@@ -145,6 +183,7 @@ namespace Lab3
         private void UpdateBookingsList()
         {
             SnuskigaFisken.FillDisplayAllBookings();
+            BookingInfo.Text = "";
             PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
             PlaceForBookings.DisplayMemberPath = "Key";
             PlaceForBookings.SelectedValuePath = "Value";
@@ -156,21 +195,18 @@ namespace Lab3
             PlaceForBookings.ItemsSource = SnuskigaFisken.DisplayAllBookings;
             PlaceForBookings.DisplayMemberPath = "Key";
             PlaceForBookings.SelectedValuePath = "Value";
-
         }
-
         private void ExportdBookings_Click(object sender, RoutedEventArgs e)
         {
             SnuskigaFisken.SaveExternalFile();
         }
-
         private void PlaceForBookings_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int[] tableAndBookingIndex = new int[] { };
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableAndBookingIndex = (int[])PlaceForBookings.SelectedValue;
-                BookingInfo.Text = $"Table: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
+                BookingInfo.Text = $"{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{SnuskigaFisken.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
             }
         }
     }

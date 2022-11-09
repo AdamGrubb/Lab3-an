@@ -43,27 +43,58 @@
                         <Button Content="Show all bookings" Name="ShowAllBookings" Click="ShowAllBookings_Click" Width="130"/>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2">
-                    <WrapPanel x:Name="placeForAllBookings">
-                        <ListBox x:Name="PlaceForBookings" SelectionChanged="PlaceForBookings_SelectionChanged"/>
-                    </WrapPanel>
+                <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2" Margin="1,0,0,0">
+                    <StackPanel x:Name="placeForAllBookings">
+                        <Border BorderThickness="3" BorderBrush="DimGray">
+                            <TextBlock Text="Bookings" FontSize="20" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ListBox x:Name="PlaceForBookings" SelectionChanged="PlaceForBookings_SelectionChanged" HorizontalAlignment="Center" Width="310" Height="300" Background="LightYellow"/>
+                    </StackPanel>
                 </Grid>
-                <TextBlock Grid.Column="4" Grid.RowSpan="2" Name="BookingInfo" TextWrapping="Wrap"/>
+                <Border BorderThickness="3" BorderBrush="DimGray" Grid.Column="3" Grid.RowSpan="2" Margin="0,35,0,0">
+                    <TextBlock Name="BookingInfo" TextWrapping="Wrap" FontSize="13"/>
+                </Border>
+                
             </Grid>
         </TabItem>
         <TabItem Header="ManagerControl">
-            <StackPanel>
-                <TextBox Text="Input name of table" x:Name="tableName" Width="200" HorizontalAlignment="left"/>
-                <Button Content="Add Table" Name="AddTableButton" Click="AddTableButton_Click" Width="100" HorizontalAlignment="left"/>
-                <ListBox x:Name="ManagerViewTables" ItemsSource="{Binding Path=ListTableID}"/>
-                <Button x:Name="LoadBookings" Content="Load external bookingData" Click="LoadBookings_Click"/>
-                <Button x:Name="ExportdBookings" Content="Export external bookingData" Click="ExportdBookings_Click"/>
-                <Button Content="Remove Table" Width="200" HorizontalAlignment="left" Name="DeleteTable" Click="DeleteTable_Click"/>
-                <TextBlock Text="Add Tables, View Tables, Sett sittingTime = Sätter tidsspannet för vad man kan boka." FontSize="20"/>
-                <TextBlock Text="Sätta bordbegränsning för hur många som får sitta?" FontSize="20"/>
-                <TextBlock Text="Remove table som fördelar ut bokningarna på de andra borden som är lediga." FontSize="20"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Grid.ColumnSpan="2">
+                    <StackPanel Orientation="Horizontal" Margin="0,30,0,0">
+                        <TextBlock Text="Input Table name" Margin="0,10,10,10"/>
+                        <TextBox x:Name="tableName" Width="100" HorizontalAlignment="left" Margin="0,10,0,10"/>
+                    </StackPanel>
+                    <Button Content="Add Table" Name="AddTableButton" Click="AddTableButton_Click" Width="100" HorizontalAlignment="left" Margin="0,10,0,10"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Seats per table:" FontSize="15" Margin="0,10,0,10"/>
+                        <TextBlock FontSize="15" Margin="10,10,20,10" x:Name="NumberOfSeats" Text="1"/>
+                        <Button Width="15" Height="20" x:Name="SubtractSeats" VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="-" Click="SubtractSeats_Click"></Button>
+                        <Button Width="15" Height="20" x:Name="AddSeat"  VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Content="+" Click="AddSeat_Click"></Button>
+                    </StackPanel>
+                    <Button x:Name="LoadBookings" Content="Load external bookingData" Click="LoadBookings_Click" Margin="0,40,0,10" Width="200"/>
+                    <Button x:Name="ExportdBookings" Content="Export external bookingData" Click="ExportdBookings_Click" Margin="0,10,0,10" Width="200"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="3" Margin="0,0,20,0">
+                    <StackPanel/>
+                    <ListBox x:Name="ManagerViewTables" ItemsSource="{Binding Path=ListTableID}" MinHeight="200" MinWidth="150" HorizontalAlignment="Right" Background="LightYellow"/>
+                    <Button Content="Remove Table" Width="200" Name="DeleteTable" Click="DeleteTable_Click" MaxWidth="100" HorizontalAlignment="Right"/>
+                </StackPanel>
 
-            </StackPanel>
+
+            </Grid>
+
 
         </TabItem>
 

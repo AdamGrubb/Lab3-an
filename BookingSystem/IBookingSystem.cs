@@ -13,11 +13,10 @@ namespace Lab3.BookingSystem
    
     {
         List<IBookingObject> BookableObjects { get; set; }
-
-        void AddBooking(DateTime Chosentime, string guestName, int numberOfGuests, string comment, int ObjectIndex);
-        void RemoveBooking(int IndexOfObjekt, int IndexOfBooking);
-        public Task OpenExternalFile();
-        public void SaveExternalFile();
+        void SaveToFile();
+        Task LoadFromFile();
+        Task OpenExternalFile();
+        void SaveExternalFile();
 
     }
 }
