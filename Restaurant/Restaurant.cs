@@ -64,7 +64,6 @@ namespace Lab3.Restaurant
             else
             {
                 FillTableID();
-                //FillDisplayAllBookings(); Testa ännu mer, Verkar som den här inte behövs
             }
         }
         private void FillTableID() //Gör en lista över vilka bord som finns samt hur många sitplatser de har. Används i en combobox för att välja bord.
