@@ -37,13 +37,13 @@ namespace Lab3
     public partial class MainWindow : Window
     {
         Restaurants Vesuvio = new Restaurants();
-        private List<TimeSpan> Availabletimes;
+        private List<TimeSpan> availabletimes;
         private List<string> tables = new List<string>();
         public MainWindow()
         {
             InitializeComponent();
-            Availabletimes = FillTimeSpan();
-            TimePicker.ItemsSource = Availabletimes;
+            availabletimes = FillTimeSpan();
+            TimePicker.ItemsSource = availabletimes;
             ChosenDate.DisplayDateStart = DateTime.Today;
             DataContext = Vesuvio;
             NumberOfSeats.Text = "2";
@@ -53,61 +53,61 @@ namespace Lab3
         private List<TimeSpan> FillTimeSpan() //Fyller på combobox med valbara tider.
         {
             List<TimeSpan> fillTimeSpan = new List<TimeSpan>();
-            TimeSpan StartTime = new TimeSpan(16, 00, 00);
+            TimeSpan startTime = new TimeSpan(16, 00, 00);
             for (int i = 0; i < 9; i++)
             {
-                fillTimeSpan.Add(StartTime);
-                StartTime = StartTime.Add(new TimeSpan(00, 30, 00));
+                fillTimeSpan.Add(startTime);
+                startTime = startTime.Add(new TimeSpan(00, 30, 00));
             }
             return fillTimeSpan;
 
         }
         private void SubtractGuest_Click(object sender, RoutedEventArgs e)
         {
-            if (Int32.TryParse(NumberOfPersons.Text, out int SubtracGuests) && SubtracGuests > 1)
+            if (Int32.TryParse(NumberOfPersons.Text, out int subtracGuests) && subtracGuests > 1)
             {
-                SubtracGuests--;
-                NumberOfPersons.Text = SubtracGuests.ToString();
+                subtracGuests--;
+                NumberOfPersons.Text = subtracGuests.ToString();
             }
         }
         private void AddGuest_Click(object sender, RoutedEventArgs e)
         {
-            if (Int32.TryParse(NumberOfPersons.Text, out int AddGuests) && AddGuests < 8)
+            if (Int32.TryParse(NumberOfPersons.Text, out int addGuests) && addGuests < 8)
             {
-                AddGuests++;
-                NumberOfPersons.Text = AddGuests.ToString();
+                addGuests++;
+                NumberOfPersons.Text = addGuests.ToString();
             }
 
         }
         private void SubtractSeats_Click(object sender, RoutedEventArgs e)
         {
 
-            if (Int32.TryParse(NumberOfSeats.Text, out int SubtractSeat) && SubtractSeat > 1)
+            if (Int32.TryParse(NumberOfSeats.Text, out int subtractSeat) && subtractSeat > 1)
             {
-                SubtractSeat--;
-                NumberOfSeats.Text = SubtractSeat.ToString();
+                subtractSeat--;
+                NumberOfSeats.Text = subtractSeat.ToString();
             }
         }
 
         private void AddSeat_Click(object sender, RoutedEventArgs e)
         {
-            if (Int32.TryParse(NumberOfSeats.Text, out int AddSeat) && AddSeat < 8)
+            if (Int32.TryParse(NumberOfSeats.Text, out int addSeat) && addSeat < 8)
             {
-                AddSeat++;
-                NumberOfSeats.Text = AddSeat.ToString();
+                addSeat++;
+                NumberOfSeats.Text = addSeat.ToString();
             }
         }
 
         private void BookingButton_Click(object sender, RoutedEventArgs e) 
         {
-            if (UserInputNullCheck() && Int32.TryParse(NumberOfPersons.Text, out int guestNumbers)) //Kolla av via UserInputNullCheck att ingen av fälten som stoppas in i Add.Booking är tomma eller null. Samt gör ytterligare en Int32.TryParse av guestNumbers innan de stoppas in som parameter.
+            if (UserInputNullCheck() && Int32.TryParse(NumberOfPersons.Text, out int guestNumbers)) //Kolla av via UserInputNullCheck att ingen av fälten som stoppas in i Add.Booking är tomma eller null. Samt gör ytterligare en Int32.TryParse av guestNumbers innan den stoppas in som parameter.
             {
                 DateTime dateAndTime = ChosenDate.SelectedDate.Value;
                 dateAndTime = dateAndTime.Add((TimeSpan)TimePicker.SelectedValue); //Lägger ihop det valda datumet med den valda tiden för bokningen.
                 string nameOfGuest = userNameInput.Text;
                 int tableIndex = ChooseTable.SelectedIndex;
-                string ExtraInfo = ExtraInfoBox.Text;
-                if (Vesuvio.AddBooking(dateAndTime, nameOfGuest, guestNumbers, ExtraInfo, tableIndex)) //AddBooking kollar av om bokningen kan genomföras och skickar true om det funkar. Ifall t ex man dubbelbokar så skickar den false. På det sättet så rensas fälten för inmatning endast om bokningen gick igenom.
+                string extraInfo = ExtraInfoBox.Text;
+                if (Vesuvio.AddBooking(dateAndTime, nameOfGuest, guestNumbers, extraInfo, tableIndex)) //AddBooking kollar av om bokningen kan genomföras och skickar true om det funkar. Ifall t ex man dubbelbokar så skickar den false. På det sättet så rensas fälten för inmatning endast om bokningen gick igenom.
                 {
                     ResetUserInput();
                 }
@@ -156,11 +156,11 @@ namespace Lab3
         private void deleteBooking_Click(object sender, RoutedEventArgs e)
         {
 
-            DeleteBookingFromDisplayAll();
+            DeleteBooking();
             UpdateBookingsList();
 
         }
-        private void DeleteBookingFromDisplayAll() //Jag har valt att ha bokningen i Listboxen som ett dictonary där Key är en string med bokningsinfo och value är en int-array där Index[0] är index för IBookingObject (table) och Index[1] är index för själva bokningen.
+        private void DeleteBooking() //Dictonary-value är en int-array där Index[0] är index för IBookingObject (table) och Index[1] är index för bokningen inom IBookingObject.
         {
             int[] tableIndex = new int[] { };
             if (PlaceForBookings.SelectedValue != null)
@@ -170,7 +170,7 @@ namespace Lab3
             }
 
         }
-        private void ShowAllBookings_Click(object sender, RoutedEventArgs e)
+        private void ShowAllBookings_Click(object sender, RoutedEventArgs e) //Lade till i och med kravet i uppgiften. 
         {
             Update();
         }
@@ -214,7 +214,7 @@ namespace Lab3
             if (PlaceForBookings.SelectedValue != null)
             {
                 tableAndBookingIndex = (int[])PlaceForBookings.SelectedValue;
-                BookingInfo.Text = $"{Vesuvio.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest: {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest: {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
+                BookingInfo.Text = $"{Vesuvio.BookableObjects[tableAndBookingIndex[0]].NameID}\nName of guest:\n {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Name}\nNumber of guest:\n {Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.NumbersOfGuests}\nComments:\n{Vesuvio.BookableObjects[tableAndBookingIndex[0]].Booking[tableAndBookingIndex[1]].BookingGuest.Comments}";
             }
         }
     }

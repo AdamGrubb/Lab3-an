@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lab3.BookingSystem
 {
-    public struct DateTimeAndGuestStruct //Se om du smärtfritt kan byta om den till DateTimeAndGuest - Eller om du smärtfritt kan göra om den till struct igen.
+    public struct DateTimeAndGuestStruct
     {
         public DateTime BookedTime { get; set; }
         public Guest BookingGuest { get; set; }
